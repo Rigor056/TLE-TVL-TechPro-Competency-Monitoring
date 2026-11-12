@@ -1,0 +1,1959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DepEd SDO City of Meycauayan - TLE / TVL Readiness Monitor</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            /* DepEd SDO City of Meycauayan Green & Gold Palette */
+            --primary-color: #1b4332;       /* Deep Forest Green */
+            --secondary-color: #2d6a4f;     /* Emerald Green */
+            --accent-gold: #d4af37;         /* Gold Accent */
+            --bg-color: #f2f7f4;            /* Soft Mint Light Gray */
+            --card-bg: #ffffff;
+            --text-color: #212529;
+            --success-color: #1b4332;       /* Deep Green */
+            --warning-color: #e67e22;       /* Warm Amber */
+            --danger-color: #c0392b;        /* Crimson Red */
+            --info-color: #6c757d;          /* Gray Neutral */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1250px;
+            margin: 0 auto;
+        }
+
+        /* Header Layout */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-bottom: 5px solid var(--accent-gold);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .header-logo-container {
+            width: 85px;
+            height: 85px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .header-logo {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px;
+        }
+
+        .header-title-container {
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        header h2 {
+            margin: 0;
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--accent-gold);
+        }
+
+        header h1 {
+            margin: 5px 0;
+            font-size: 22px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        header p {
+            margin: 5px 0 0 0;
+            font-size: 13px;
+            color: #d1e7dd;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 18px;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 8px;
+        }
+
+        /* Metric Dashboard Summary Cards */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-top: 3px solid var(--secondary-color);
+        }
+
+        .metric-card.gold-border {
+            border-top: 3px solid var(--accent-gold);
+        }
+
+        .metric-card h3 {
+            margin: 0;
+            font-size: 28px;
+            color: var(--primary-color);
+        }
+
+        .metric-card p {
+            margin: 5px 0 0 0;
+            font-size: 12px;
+            color: #6c757d;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        /* Chart Dashboard Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 280px;
+            width: 100%;
+        }
+
+        .chart-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            background-color: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .chart-header-bar label {
+            margin-bottom: 0;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+            color: #2d3748;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 15px;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 4px rgba(45, 106, 79, 0.4);
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 15px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .progress-bar-bg {
+            background-color: #e9ecef;
+            border-radius: 20px;
+            height: 25px;
+            width: 100%;
+            overflow: hidden;
+            margin-top: 8px;
+            border: 1px solid #dee2e6;
+        }
+
+        .progress-bar-fill {
+            background-color: var(--secondary-color);
+            height: 100%;
+            width: 0%;
+            transition: width 0.4s ease;
+            text-align: center;
+            color: white;
+            line-height: 25px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .status-ready { background-color: var(--success-color); }
+        .status-developing { background-color: var(--warning-color); }
+        .status-not-ready { background-color: var(--danger-color); }
+
+        /* NC Outcome Specific Badges */
+        .outcome-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .outcome-passed { background-color: #2e7d32; }
+        .outcome-completion { background-color: #ed6c02; }
+        .outcome-failed { background-color: #d32f2f; }
+        .outcome-pending { background-color: #6c757d; }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 14px;
+        }
+
+        th { 
+            background-color: #e8f5e9; 
+            color: var(--primary-color);
+        }
+
+        tr.category-header-row td {
+            background-color: #d1e7dd;
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 8px 10px;
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 4px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:hover { background-color: var(--secondary-color); }
+        .btn-secondary { background-color: #6c757d; }
+        .btn-info { background-color: #0d6efd; }
+        .btn-info:hover { background-color: #0b5ed7; }
+        .btn-success { background-color: #2e7d32; }
+        .btn-success:hover { background-color: #1b4332; }
+        .btn-danger { background-color: var(--danger-color); }
+        .btn-danger:hover { background-color: #a93226; }
+        .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+        .radio-options label {
+            font-weight: normal;
+            margin-right: 15px;
+            cursor: pointer;
+        }
+
+        .outcome-footer-box {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .import-box {
+            border: 2px dashed #2d6a4f;
+            background-color: #f8fdfa;
+            border-radius: 6px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* Printable Individual Certificate Template */
+        #printableCertificateArea {
+            display: none;
+            background: #fff;
+            padding: 20px;
+            color: #000;
+        }
+
+        .cert-header {
+            text-align: center;
+            border-bottom: 2px solid #1b4332;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .cert-header h3 { margin: 0; font-size: 14px; text-transform: uppercase; color: #555; }
+        .cert-header h1 { margin: 5px 0; font-size: 20px; text-transform: uppercase; color: #1b4332; }
+        .cert-header p { margin: 0; font-size: 12px; }
+
+        .cert-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .cert-info-grid p { margin: 4px 0; }
+
+        .cert-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .cert-table th, .cert-table td {
+            border: 1px solid #444;
+            padding: 6px 8px;
+            font-size: 12px;
+        }
+
+        .cert-table th {
+            background-color: #f0f0f0;
+        }
+
+        .cert-signatures {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .cert-sig-block {
+            text-align: center;
+            width: 220px;
+        }
+
+        .cert-sig-line {
+            border-top: 1px solid #000;
+            margin-top: 40px;
+            padding-top: 4px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        /* Dedicated Print Stylesheet */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 12mm;
+            }
+
+            body {
+                background-color: #ffffff !important;
+                color: #000000 !important;
+                padding: 0 !important;
+            }
+
+            body.print-individual .container {
+                display: none !important;
+            }
+
+            body.print-individual #printableCertificateArea {
+                display: block !important;
+            }
+
+            body:not(.print-individual) @page {
+                size: A4 landscape;
+                margin: 10mm;
+            }
+
+            body:not(.print-individual) .non-printable, 
+            body:not(.print-individual) .card:nth-of-type(1), 
+            body:not(.print-individual) .card:nth-of-type(3), 
+            body:not(.print-individual) .card:nth-of-type(4), 
+            body:not(.print-individual) .card:nth-of-type(5), 
+            body:not(.print-individual) .card:nth-of-type(6), 
+            body:not(.print-individual) .card:nth-of-type(7), 
+            body:not(.print-individual) .btn, 
+            body:not(.print-individual) .action-col {
+                display: none !important;
+            }
+
+            body:not(.print-individual) header {
+                background-color: transparent !important;
+                color: black !important;
+                border-bottom: 2px solid #000 !important;
+                box-shadow: none !important;
+                padding: 0 0 10px 0 !important;
+            }
+
+            body:not(.print-individual) header h1 { color: #000 !important; font-size: 18px !important; }
+            body:not(.print-individual) header h2 { color: #333 !important; font-size: 11px !important; }
+            body:not(.print-individual) header p { color: #444 !important; font-size: 11px !important; }
+
+            body:not(.print-individual) .card {
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+                background: transparent !important;
+            }
+
+            body:not(.print-individual) table {
+                width: 100% !important;
+                border: 1px solid #333 !important;
+            }
+
+            body:not(.print-individual) th, 
+            body:not(.print-individual) td {
+                border: 1px solid #666 !important;
+                color: black !important;
+                padding: 6px !important;
+                font-size: 10px !important;
+            }
+
+            body:not(.print-individual) th {
+                background-color: #f0f0f0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .status-badge, .outcome-badge {
+                border: 1px solid #000;
+                color: #000 !important;
+                background: transparent !important;
+                font-size: 10px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <!-- Division Logo Left -->
+        <div class="header-logo-container">
+            <img src="2.png" alt="SDO Meycauayan Logo" class="header-logo" onerror="this.onerror=null; this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/City_of_Meycauayan_Seal.png/180px-City_of_Meycauayan_Seal.png';">
+        </div>
+
+        <!-- Title Section -->
+        <div class="header-title-container">
+            <h2>Department of Education • Region III</h2>
+            <h1>Schools Division Office of City of Meycauayan</h1>
+            <p>TLE / TechPro Teachers & Students Competency Readiness Monitoring System</p>
+        </div>
+
+        <!-- DepEd Logo Right -->
+        <div class="header-logo-container">
+            <img src="1.png" alt="DepEd Seal" class="header-logo" onerror="this.onerror=null; this.src='https://upload.wikimedia.org/wikipedia/commons/f/fa/Department_of_Education_%28DepEd%29.svg';">
+        </div>
+    </header>
+
+    <!-- Metric Dashboard Summary Cards -->
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <h3 id="statTotal">0</h3>
+            <p>Total Profiles</p>
+        </div>
+        <div class="metric-card">
+            <h3 id="statTeachers">0</h3>
+            <p>Teachers</p>
+        </div>
+        <div class="metric-card">
+            <h3 id="statStudents">0</h3>
+            <p>Students</p>
+        </div>
+        <div class="metric-card gold-border">
+            <h3 id="statReady">0</h3>
+            <p>Passed NC II / Certified</p>
+        </div>
+    </div>
+
+    <!-- Analytics & Chart Summaries Card with Section Selector -->
+    <div class="card">
+        <h2>Visual Readiness & Certification Analytics</h2>
+        
+        <div class="chart-header-bar non-printable">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <label for="chartSectionFilter"><strong>Filter Analytics by Section:</strong></label>
+                <select id="chartSectionFilter" style="max-width: 280px;" onchange="renderSummaryTable()">
+                    <option value="All">All Sections (Entire Roster)</option>
+                </select>
+            </div>
+            <button type="button" class="btn btn-success btn-sm" onclick="exportSectionAnalyticsCSV()">Export Section Analytics (CSV)</button>
+        </div>
+
+        <div class="charts-grid">
+            <div>
+                <h4 style="margin: 0 0 10px 0; color: #2d6a4f; text-align: center;">Passing Rate (%) per Qualification</h4>
+                <div class="chart-container">
+                    <canvas id="qualPassChart"></canvas>
+                </div>
+            </div>
+            <div>
+                <h4 style="margin: 0 0 10px 0; color: #2d6a4f; text-align: center;">TESDA Assessment Outcomes</h4>
+                <div class="chart-container">
+                    <canvas id="outcomeChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Batch Update Competency Ratings Card -->
+    <div class="card non-printable">
+        <h2>Batch Update Section Competency Ratings</h2>
+        <div class="grid-4" style="align-items: flex-end;">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="batchRatingSection">Target Section:</label>
+                <select id="batchRatingSection">
+                    <option value="">-- Select Section --</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="batchRatingCategory">Competency Scope:</label>
+                <select id="batchRatingCategory">
+                    <option value="All">All Competencies (Basic, Common, Core)</option>
+                    <option value="Basic Competencies">Basic Competencies Only</option>
+                    <option value="Common Competencies">Common Competencies Only</option>
+                    <option value="Core Competencies">Core Competencies Only</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="batchRatingScore">Target Rating:</label>
+                <select id="batchRatingScore">
+                    <option value="2">Competent (2)</option>
+                    <option value="1">Developing (1)</option>
+                    <option value="0">Not Competent (0)</option>
+                </select>
+            </div>
+            <div>
+                <button type="button" class="btn btn-success" style="width: 100%;" onclick="executeBatchRatingUpdate()">Apply Batch Rating</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Update Assessment Outcomes Card -->
+    <div class="card non-printable">
+        <h2>Bulk Update Section Assessment Outcomes</h2>
+        <div class="grid-3" style="align-items: flex-end;">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="bulkTargetSection">Select Target Section:</label>
+                <select id="bulkTargetSection">
+                    <option value="">-- Select Section --</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="bulkTargetOutcome">New TESDA Assessment Outcome:</label>
+                <select id="bulkTargetOutcome">
+                    <option value="Passed">Passed (Certified Competent)</option>
+                    <option value="For Completion">For Completion (Re-assessment)</option>
+                    <option value="Failed">Failed (Not Yet Competent)</option>
+                    <option value="Pending">Pending / Pre-Assessment</option>
+                </select>
+            </div>
+            <div>
+                <button type="button" class="btn btn-info" style="width: 100%;" onclick="executeBulkOutcomeUpdate()">Apply Outcome to Section</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CSV Batch Import Tool Card -->
+    <div class="card non-printable">
+        <h2>Batch Import Student Roster (CSV)</h2>
+        <div class="import-box">
+            <p style="margin-top: 0;">Upload a CSV spreadsheet containing your class roster to import multiple students at once.</p>
+            <div style="max-width: 500px; margin: 0 auto 15px auto;">
+                <input type="file" id="csvFileInput" accept=".csv" style="padding: 6px;">
+            </div>
+            <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                <button type="button" class="btn btn-success" onclick="processCSVImport()">Import CSV Roster</button>
+                <button type="button" class="btn btn-secondary" onclick="downloadSampleCSV()">Download Sample CSV Template</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registration Form -->
+    <div class="card non-printable">
+        <h2>Register New Profile</h2>
+        <form id="addProfileForm" onsubmit="addProfile(event)">
+            <div class="grid-3">
+                <div class="form-group">
+                    <label for="role">User Type:</label>
+                    <select id="role" onchange="toggleStudentFields()" required>
+                        <option value="Student">Student</option>
+                        <option value="Teacher">Teacher</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="fullName">Full Name:</label>
+                    <input type="text" id="fullName" required placeholder="e.g. Juan Dela Cruz">
+                </div>
+                <div class="form-group">
+                    <label for="qualification">NC II Qualification:</label>
+                    <select id="qualification" required>
+                        <option value="Cookery NC II">Cookery NC II</option>
+                        <option value="Technical Drafting NC II">Technical Drafting NC II</option>
+                        <option value="Food Processing NC II">Food Processing NC II</option>
+                        <option value="Visual Graphic Design NC II">Visual Graphic Design NC II</option>
+                        <option value="Animation NC II">Animation NC II</option>
+                        <option value="Food & Beverage Services NC II">Food & Beverage Services (FBS) NC II</option>
+                        <option value="Bread & Pastry Production NC II">Bread & Pastry Production (BPP) NC II</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Student Specific Fields -->
+            <div id="studentFields" class="grid-3">
+                <div class="form-group">
+                    <label for="lrn">Learner Reference Number (LRN):</label>
+                    <input type="text" id="lrn" maxlength="12" pattern="\d{12}" title="Please enter a valid 12-digit LRN" placeholder="12-digit DepEd LRN (e.g. 101234567890)">
+                </div>
+                <div class="form-group">
+                    <label for="gradeLevel">Grade Level:</label>
+                    <select id="gradeLevel">
+                        <option value="Grade 11">Grade 11</option>
+                        <option value="Grade 12">Grade 12</option>
+                        <option value="Grade 10">Grade 10</option>
+                        <option value="Grade 9">Grade 9</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="section">Section:</label>
+                    <input type="text" id="section" placeholder="e.g. TVL-A, Diamond, Hephaestus">
+                </div>
+            </div>
+
+            <button type="submit" class="btn">Add Profile to Database</button>
+        </form>
+    </div>
+
+    <!-- Individual Evaluation Section with Search Bar -->
+    <div class="card non-printable">
+        <h2>Evaluation Profile Selection</h2>
+        <div class="grid-3">
+            <div class="form-group">
+                <label for="evalSearchInput">Search Profile:</label>
+                <input type="text" id="evalSearchInput" placeholder="Type name, LRN, or section..." oninput="loadProfileList()">
+            </div>
+            <div class="form-group">
+                <label for="filterRole">Filter Role:</label>
+                <select id="filterRole" onchange="loadProfileList()">
+                    <option value="All">All Profiles</option>
+                    <option value="Student">Students Only</option>
+                    <option value="Teacher">Teachers Only</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="profileSelect">Select Individual:</label>
+                <select id="profileSelect" onchange="loadSelectedProfile()"></select>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 15px;">
+            <div>
+                <p><strong>Role:</strong> <span id="displayRole">-</span></p>
+                <p id="lrnDetailsContainer" style="display: none;"><strong>LRN:</strong> <span id="displayLrn">-</span></p>
+                <p id="classDetailsContainer" style="display: none;"><strong>Class Details:</strong> <span id="displayClassDetails">-</span></p>
+                <p><strong>Target Qualification:</strong> <span id="displayQual">-</span></p>
+            </div>
+            <div style="text-align: right;">
+                <p style="margin-top: 5px;"><strong>Pre-Assessment Readiness:</strong></p>
+                <span id="readinessStatus" class="status-badge status-developing">Select Profile</span>
+                <div style="margin-top: 10px;">
+                    <button type="button" class="btn btn-info btn-sm" onclick="printIndividualCertificate()">Print Individual Assessment Report</button>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <label>Readiness Progress (Basic + Common + Core Units):</label>
+            <div class="progress-bar-bg">
+                <div id="progressBar" class="progress-bar-fill">0%</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Competency Checklist Card -->
+    <div class="card non-printable">
+        <h2>Comprehensive TESDA Competencies Evaluation Checklist</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 55%;">Competency Unit</th>
+                    <th style="width: 45%;">Proficiency Rating</th>
+                </tr>
+            </thead>
+            <tbody id="competencyList">
+                <tr><td colspan="2">Please select a profile above to evaluate basic, common, and core competencies.</td></tr>
+            </tbody>
+        </table>
+
+        <!-- TESDA Assessment Result placed at the end of competencies -->
+        <div class="outcome-footer-box">
+            <div style="flex-grow: 1; max-width: 400px;">
+                <label for="ncOutcomeSelect">Final TESDA Assessment Result:</label>
+                <select id="ncOutcomeSelect">
+                    <option value="Pending">Pending / Pre-Assessment</option>
+                    <option value="Passed">Passed (Certified Competent)</option>
+                    <option value="For Completion">For Completion (Re-assessment)</option>
+                    <option value="Failed">Failed (Not Yet Competent)</option>
+                </select>
+            </div>
+            <div>
+                <button type="button" class="btn" onclick="saveRatings()">Save Assessment Data</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Master Directory Summary -->
+    <div class="card">
+        <h2>Master Checklist & Directory Summary</h2>
+        
+        <!-- Filter Control Bar -->
+        <div class="grid-4 non-printable" style="margin-bottom: 10px;">
+            <div class="form-group">
+                <label for="summarySearchInput">Search Directory:</label>
+                <input type="text" id="summarySearchInput" placeholder="Search LRN, name, section..." oninput="renderSummaryTable()">
+            </div>
+            <div class="form-group">
+                <label for="summaryFilterRole">Filter Role:</label>
+                <select id="summaryFilterRole" onchange="renderSummaryTable()">
+                    <option value="All">All Roles</option>
+                    <option value="Teacher">Teachers Only</option>
+                    <option value="Student">Students Only</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="summaryFilterQual">Filter Qualification:</label>
+                <select id="summaryFilterQual" onchange="renderSummaryTable()">
+                    <option value="All">All Qualifications</option>
+                    <option value="Cookery NC II">Cookery NC II</option>
+                    <option value="Technical Drafting NC II">Technical Drafting NC II</option>
+                    <option value="Food Processing NC II">Food Processing NC II</option>
+                    <option value="Visual Graphic Design NC II">Visual Graphic Design NC II</option>
+                    <option value="Animation NC II">Animation NC II</option>
+                    <option value="Food & Beverage Services NC II">Food & Beverage Services NC II</option>
+                    <option value="Bread & Pastry Production NC II">Bread & Pastry Production NC II</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="summaryFilterOutcome">Filter NC Result:</label>
+                <select id="summaryFilterOutcome" onchange="renderSummaryTable()">
+                    <option value="All">All Outcomes</option>
+                    <option value="Passed">Passed / Certified</option>
+                    <option value="For Completion">For Completion</option>
+                    <option value="Failed">Failed</option>
+                    <option value="Pending">Pending Evaluation</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Role</th>
+                        <th>LRN</th>
+                        <th>Full Name</th>
+                        <th>Grade</th>
+                        <th>Section</th>
+                        <th>Qualification</th>
+                        <th>Readiness %</th>
+                        <th>NC II Outcome</th>
+                        <th class="action-col" style="text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="summaryTableBody">
+                    <tr><td colspan="9">Loading directory records...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Action Control Buttons -->
+        <div class="non-printable" style="margin-top: 20px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+            <div style="display: flex; gap: 10px;">
+                <button type="button" class="btn btn-info" onclick="window.print()">Print Directory Report</button>
+                <button type="button" class="btn btn-success" onclick="exportDirectoryCSV()">Export Directory (CSV / Excel)</button>
+                <button type="button" class="btn btn-secondary" onclick="exportData()">Export Full Backup (JSON)</button>
+            </div>
+            <button type="button" class="btn btn-danger" onclick="clearAllData()">Clear All Records</button>
+        </div>
+    </div>
+</div>
+
+<!-- Printable Individual Certificate Area -->
+<div id="printableCertificateArea">
+    <div class="cert-header">
+        <h3>Department of Education</h3>
+		<h3>Region III</h3>
+        <h1>Schools Division Office of City of Meycauayan</h1>
+        <p>Technical Professional (TechPro) / TLE Pre-Assessment Readiness Certificate</p>
+    </div>
+
+    <div class="cert-info-grid">
+        <div>
+            <p><strong>Candidate Name:</strong> <span id="certName">-</span></p>
+            <p><strong>User Type / Role:</strong> <span id="certRole">-</span></p>
+            <p id="certLrnRow"><strong>Learner Reference No. (LRN):</strong> <span id="certLrn">-</span></p>
+        </div>
+        <div>
+            <p id="certClassRow"><strong>Grade Level & Section:</strong> <span id="certClass">-</span></p>
+            <p><strong>Target Qualification:</strong> <span id="certQual">-</span></p>
+            <p><strong>Assessment Date:</strong> <span id="certDate">-</span></p>
+        </div>
+    </div>
+
+    <table class="cert-table">
+        <thead>
+            <tr>
+                <th style="width: 70%;">Competency Unit Title</th>
+                <th style="width: 30%; text-align: center;">Evaluation Rating</th>
+            </tr>
+        </thead>
+        <tbody id="certCompetencyBody">
+            <!-- Populated via JS -->
+        </tbody>
+    </table>
+
+    <div style="border: 1px solid #000; padding: 10px; display: flex; justify-content: space-between; margin-top: 15px;">
+        <div>
+            <p style="margin: 0;"><strong>Overall Readiness Index:</strong> <span id="certScorePct">0%</span></p>
+            <p style="margin: 4px 0 0 0;"><strong>Readiness Level:</strong> <span id="certReadinessLevel">-</span></p>
+        </div>
+        <div style="text-align: right;">
+            <p style="margin: 0;"><strong>Final Assessment Outcome:</strong></p>
+            <p style="margin: 4px 0 0 0; font-size: 14px; font-weight: bold;" id="certFinalOutcome">PENDING</p>
+        </div>
+    </div>
+
+    <div class="cert-signatures">
+        <div class="cert-sig-block">
+            <div class="cert-sig-line">TechPro Teacher / Assessor</div>
+            <div style="font-size: 11px;">Signature Over Printed Name</div>
+        </div>
+        <div class="cert-sig-block">
+            <div class="cert-sig-line">School Head / TechPro Coordinator</div>
+            <div style="font-size: 11px;">Signature Over Printed Name</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // TESDA Basic Competencies across all NC II programs
+    const basicCompetencies = [
+        "Participate in workplace communication",
+        "Work in a team environment",
+        "Practice career professionalism",
+        "Practice occupational health and safety procedures"
+    ];
+
+    // Common Competencies by Discipline Group
+    const commonCompetenciesMap = {
+        "Cookery NC II": [
+            "Develop and update industry knowledge",
+            "Observe workplace hygiene procedures",
+            "Perform computer operations",
+            "Perform workplace safety practices"
+        ],
+        "Technical Drafting NC II": [
+            "Apply quality standards",
+            "Perform computer operations",
+            "Operate CAD software and accessories",
+            "Maintain drafting tools and equipment",
+            "Perform workplace safety practices"
+        ],
+        "Food Processing NC II": [
+            "Apply food safety and sanitation procedures",
+            "Perform basic computer operations",
+            "Work in a manufacturing environment",
+            "Maintain quality standards"
+        ],
+        "Visual Graphic Design NC II": [
+            "Apply quality standards",
+            "Perform computer operations",
+            "Operate media editing software",
+            "Work in a design team environment"
+        ],
+        "Animation NC II": [
+            "Apply quality standards",
+            "Perform computer operations",
+            "Maintain digital equipment and software",
+            "Work in a creative design environment"
+        ],
+        "Food & Beverage Services NC II": [
+            "Develop and update hospitality industry knowledge",
+            "Observe workplace hygiene procedures",
+            "Perform workplace safety practices",
+            "Provide effective customer service"
+        ],
+        "Bread & Pastry Production NC II": [
+            "Develop and update bakery industry knowledge",
+            "Observe workplace hygiene procedures",
+            "Perform workplace safety practices",
+            "Maintain clean work areas"
+        ]
+    };
+
+    // Core Competencies by Specific Qualification
+    const coreCompetenciesMap = {
+        "Cookery NC II": [
+            "Clean and maintain kitchen premises",
+            "Prepare stocks, sauces, and soups",
+            "Prepare appetizers",
+            "Prepare salads and dressings",
+            "Prepare sandwiches",
+            "Prepare meat dishes",
+            "Prepare vegetables dishes",
+            "Prepare egg dishes",
+            "Prepare poultry and game dishes",
+            "Prepare seafood dishes",
+            "Prepare desserts",
+            "Package prepared food"
+        ],
+        "Technical Drafting NC II": [
+            "Prepare architectural job drawings",
+            "Prepare structural job drawings",
+            "Prepare building plumbing job drawings",
+            "Prepare electrical and electronic layout and details",
+            "Prepare mechanical layout and details"
+        ],
+        "Food Processing NC II": [
+            "Process food by salting, curing, and smoking",
+            "Process food by fermentation and pickling",
+            "Process food by sugar concentration",
+            "Process food by drying and dehydration",
+            "Process food by thermal application"
+        ],
+        "Visual Graphic Design NC II": [
+            "Develop designs for logo",
+            "Develop designs for print media",
+            "Develop designs for user interfaces (UI)",
+            "Develop designs for product packaging",
+            "Design documentation and artwork layout"
+        ],
+        "Animation NC II": [
+            "Produce keyframes for 2D animation",
+            "Produce cleaned-up drawings for 2D animation",
+            "Produce in-between drawings for 2D animation",
+            "Create 3D digital models",
+            "Apply materials and textures to 3D models"
+        ],
+        "Food & Beverage Services NC II": [
+            "Prepare the dining room/restaurant area for service",
+            "Welcome guests and take food and beverage orders",
+            "Promote food and beverage products",
+            "Serve food and beverage orders to guests",
+            "Provide room service",
+            "Receive and handle guest concerns"
+        ],
+        "Bread & Pastry Production NC II": [
+            "Prepare and produce bakery products",
+            "Prepare and produce pastry products",
+            "Prepare and present gateaux, tortes, and cakes",
+            "Prepare and display petits fours",
+            "Present desserts"
+        ]
+    };
+
+    let db;
+    let currentProfileId = null;
+    let qualPassChartInstance = null;
+    let outcomeChartInstance = null;
+
+    // Database Initialization
+    const request = indexedDB.open("TLENCMonitorDB_Meycauayan_V14", 1);
+
+    request.onupgradeneeded = function (event) {
+        db = event.target.result;
+        if (!db.objectStoreNames.contains("profiles")) {
+            db.createObjectStore("profiles", { keyPath: "id", autoIncrement: true });
+        }
+    };
+
+    request.onsuccess = function (event) {
+        db = event.target.result;
+        toggleStudentFields();
+        loadProfileList();
+        renderSummaryTable();
+    };
+
+    request.onerror = function (event) {
+        console.error("Database error:", event.target.errorCode);
+    };
+
+    function toggleStudentFields() {
+        const role = document.getElementById("role").value;
+        const studentFields = document.getElementById("studentFields");
+        const lrnInput = document.getElementById("lrn");
+
+        if (role === "Student") {
+            studentFields.style.display = "grid";
+            lrnInput.setAttribute("required", "required");
+        } else {
+            studentFields.style.display = "none";
+            lrnInput.removeAttribute("required");
+        }
+    }
+
+    function generateCompetenciesList(qualification) {
+        const units = [];
+
+        // 1. Basic
+        basicCompetencies.forEach((title, idx) => {
+            units.push({ id: "basic_" + (idx + 1), category: "Basic Competencies", title: title, score: 0 });
+        });
+
+        // 2. Common
+        const commonUnits = commonCompetenciesMap[qualification] || [];
+        commonUnits.forEach((title, idx) => {
+            units.push({ id: "common_" + (idx + 1), category: "Common Competencies", title: title, score: 0 });
+        });
+
+        // 3. Core
+        const coreUnits = coreCompetenciesMap[qualification] || [];
+        coreUnits.forEach((title, idx) => {
+            units.push({ id: "core_" + (idx + 1), category: "Core Competencies", title: title, score: 0 });
+        });
+
+        return units;
+    }
+
+    function addProfile(event) {
+        event.preventDefault();
+
+        const role = document.getElementById("role").value;
+        const name = document.getElementById("fullName").value;
+        const qualification = document.getElementById("qualification").value;
+        
+        let lrn = "";
+        let gradeLevel = "";
+        let section = "";
+
+        if (role === "Student") {
+            lrn = document.getElementById("lrn").value.trim();
+            gradeLevel = document.getElementById("gradeLevel").value;
+            section = document.getElementById("section").value.trim();
+        }
+
+        const competencies = generateCompetenciesList(qualification);
+
+        const newProfile = { 
+            role, 
+            name, 
+            lrn, 
+            qualification, 
+            gradeLevel, 
+            section, 
+            ncOutcome: "Pending", 
+            competencies 
+        };
+
+        const transaction = db.transaction(["profiles"], "readwrite");
+        const store = transaction.objectStore("profiles");
+        store.add(newProfile);
+
+        transaction.oncomplete = function () {
+            alert(`${role} profile created successfully!`);
+            document.getElementById("addProfileForm").reset();
+            toggleStudentFields();
+            loadProfileList();
+            renderSummaryTable();
+        };
+    }
+
+    // Batch Update Competency Ratings Across Section
+    function executeBatchRatingUpdate() {
+        const targetSection = document.getElementById("batchRatingSection").value;
+        const targetCategory = document.getElementById("batchRatingCategory").value;
+        const targetScore = parseInt(document.getElementById("batchRatingScore").value);
+
+        if (!targetSection) {
+            alert("Please select a target section to perform the batch rating update.");
+            return;
+        }
+
+        let ratingLabel = targetScore === 2 ? "Competent (2)" : (targetScore === 1 ? "Developing (1)" : "Not Competent (0)");
+
+        if (!confirm(`Are you sure you want to set "${targetCategory}" to "${ratingLabel}" for ALL students in Section "${targetSection}"?`)) {
+            return;
+        }
+
+        const transaction = db.transaction(["profiles"], "readwrite");
+        const store = transaction.objectStore("profiles");
+        const getRequest = store.getAll();
+
+        getRequest.onsuccess = function () {
+            const profiles = getRequest.result;
+            let updatedStudentsCount = 0;
+
+            profiles.forEach(p => {
+                if (p.role === "Student" && p.section === targetSection) {
+                    p.competencies.forEach(comp => {
+                        if (targetCategory === "All" || comp.category === targetCategory) {
+                            comp.score = targetScore;
+                        }
+                    });
+                    store.put(p);
+                    updatedStudentsCount++;
+                }
+            });
+
+            transaction.oncomplete = function () {
+                alert(`Successfully updated competency ratings for ${updatedStudentsCount} students in Section "${targetSection}".`);
+                renderSummaryTable();
+                if (currentProfileId) {
+                    loadSelectedProfile(currentProfileId);
+                }
+            };
+        };
+    }
+
+    // Bulk Update Section Outcome
+    function executeBulkOutcomeUpdate() {
+        const targetSection = document.getElementById("bulkTargetSection").value;
+        const newOutcome = document.getElementById("bulkTargetOutcome").value;
+
+        if (!targetSection) {
+            alert("Please select a target section to perform the bulk update.");
+            return;
+        }
+
+        if (!confirm(`Are you sure you want to set the outcome to "${newOutcome}" for ALL students in Section "${targetSection}"?`)) {
+            return;
+        }
+
+        const transaction = db.transaction(["profiles"], "readwrite");
+        const store = transaction.objectStore("profiles");
+        const getRequest = store.getAll();
+
+        getRequest.onsuccess = function () {
+            const profiles = getRequest.result;
+            let updatedCount = 0;
+
+            profiles.forEach(p => {
+                if (p.role === "Student" && p.section === targetSection) {
+                    p.ncOutcome = newOutcome;
+                    store.put(p);
+                    updatedCount++;
+                }
+            });
+
+            transaction.oncomplete = function () {
+                alert(`Successfully updated ${updatedCount} student records in Section "${targetSection}" to "${newOutcome}".`);
+                renderSummaryTable();
+                if (currentProfileId) {
+                    loadSelectedProfile(currentProfileId);
+                }
+            };
+        };
+    }
+
+    // CSV Batch Import Functionality
+    function processCSVImport() {
+        const fileInput = document.getElementById("csvFileInput");
+        const file = fileInput.files[0];
+
+        if (!file) {
+            alert("Please select a CSV file first.");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const text = e.target.result;
+            const lines = text.split(/\r\n|\n/);
+            if (lines.length < 2) {
+                alert("CSV file appears to be empty or missing data rows.");
+                return;
+            }
+
+            const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
+            
+            const lrnIdx = headers.findIndex(h => h.includes('lrn'));
+            const nameIdx = headers.findIndex(h => h.includes('name'));
+            const gradeIdx = headers.findIndex(h => h.includes('grade'));
+            const sectionIdx = headers.findIndex(h => h.includes('section'));
+            const qualIdx = headers.findIndex(h => h.includes('qual') || h.includes('course'));
+
+            if (nameIdx === -1) {
+                alert("CSV header must contain a column for Student Full Name (e.g. 'Full Name', 'Name').");
+                return;
+            }
+
+            const transaction = db.transaction(["profiles"], "readwrite");
+            const store = transaction.objectStore("profiles");
+
+            let importCount = 0;
+
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+
+                const row = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || line.split(',');
+                const cleanRow = row.map(cell => cell.trim().replace(/^"|"$/g, ''));
+
+                const name = cleanRow[nameIdx] || "";
+                if (!name) continue;
+
+                const lrn = lrnIdx !== -1 ? (cleanRow[lrnIdx] || "") : "";
+                const gradeLevel = gradeIdx !== -1 ? (cleanRow[gradeIdx] || "Grade 11") : "Grade 11";
+                const section = sectionIdx !== -1 ? (cleanRow[sectionIdx] || "TVL-A") : "TVL-A";
+                let qual = qualIdx !== -1 ? (cleanRow[qualIdx] || "Cookery NC II") : "Cookery NC II";
+
+                if (!coreCompetenciesMap[qual]) {
+                    const matchedKey = Object.keys(coreCompetenciesMap).find(k => k.toLowerCase().includes(qual.toLowerCase()));
+                    if (matchedKey) qual = matchedKey;
+                    else qual = "Cookery NC II";
+                }
+
+                const competencies = generateCompetenciesList(qual);
+
+                const studentProfile = {
+                    role: "Student",
+                    name: name,
+                    lrn: lrn,
+                    qualification: qual,
+                    gradeLevel: gradeLevel,
+                    section: section,
+                    ncOutcome: "Pending",
+                    competencies: competencies
+                };
+
+                store.add(studentProfile);
+                importCount++;
+            }
+
+            transaction.oncomplete = function () {
+                alert(`Successfully imported ${importCount} student records from CSV!`);
+                fileInput.value = "";
+                loadProfileList();
+                renderSummaryTable();
+            };
+        };
+
+        reader.readAsText(file);
+    }
+
+    function downloadSampleCSV() {
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += `LRN,Full Name,Grade Level,Section,Qualification\n`;
+        csvContent += `101234567891,"Juan Dela Cruz","Grade 11","TVL-A","Cookery NC II"\n`;
+        csvContent += `101234567892,"Maria Santos","Grade 12","TVL-B","Technical Drafting NC II"\n`;
+        csvContent += `101234567893,"Pedro Reyes","Grade 11","Diamond","Visual Graphic Design NC II"\n`;
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "sample_student_roster.csv");
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    }
+
+    function loadProfileList() {
+        const filterRole = document.getElementById("filterRole").value;
+        const evalSearch = document.getElementById("evalSearchInput").value.toLowerCase().trim();
+
+        const transaction = db.transaction(["profiles"], "readonly");
+        const store = transaction.objectStore("profiles");
+        const request = store.getAll();
+
+        request.onsuccess = function () {
+            const profiles = request.result;
+            const select = document.getElementById("profileSelect");
+            select.innerHTML = '<option value="">-- Select Profile --</option>';
+
+            profiles.forEach(p => {
+                const matchesRole = (filterRole === "All" || p.role === filterRole);
+                
+                const matchesSearch = evalSearch === "" ||
+                    p.name.toLowerCase().includes(evalSearch) ||
+                    (p.lrn && p.lrn.toLowerCase().includes(evalSearch)) ||
+                    p.qualification.toLowerCase().includes(evalSearch) ||
+                    (p.section && p.section.toLowerCase().includes(evalSearch));
+
+                if (matchesRole && matchesSearch) {
+                    const opt = document.createElement("option");
+                    opt.value = p.id;
+                    const lrnInfo = (p.role === "Student" && p.lrn) ? ` [LRN: ${p.lrn}]` : '';
+                    const classInfo = (p.role === "Student" && p.gradeLevel) ? ` (${p.gradeLevel} - ${p.section})` : '';
+                    opt.innerText = `[${p.role}] ${p.name}${lrnInfo}${classInfo} - ${p.qualification}`;
+                    select.appendChild(opt);
+                }
+            });
+        };
+    }
+
+    function loadSelectedProfile(targetId = null) {
+        const id = targetId || parseInt(document.getElementById("profileSelect").value);
+        if (!id) return;
+
+        document.getElementById("profileSelect").value = id;
+        currentProfileId = id;
+        const transaction = db.transaction(["profiles"], "readonly");
+        const store = transaction.objectStore("profiles");
+        const request = store.get(id);
+
+        request.onsuccess = function () {
+            const profile = request.result;
+            document.getElementById("displayRole").innerText = profile.role;
+            document.getElementById("displayQual").innerText = profile.qualification;
+            document.getElementById("ncOutcomeSelect").value = profile.ncOutcome || "Pending";
+
+            const lrnContainer = document.getElementById("lrnDetailsContainer");
+            const classContainer = document.getElementById("classDetailsContainer");
+
+            if (profile.role === "Student") {
+                lrnContainer.style.display = "block";
+                document.getElementById("displayLrn").innerText = profile.lrn || "N/A";
+
+                classContainer.style.display = "block";
+                document.getElementById("displayClassDetails").innerText = `${profile.gradeLevel} - ${profile.section}`;
+            } else {
+                lrnContainer.style.display = "none";
+                classContainer.style.display = "none";
+            }
+
+            const tbody = document.getElementById("competencyList");
+            tbody.innerHTML = "";
+
+            let currentCategory = "";
+
+            profile.competencies.forEach((comp) => {
+                if (comp.category !== currentCategory) {
+                    currentCategory = comp.category;
+                    const catTr = document.createElement("tr");
+                    catTr.className = "category-header-row";
+                    catTr.innerHTML = `<td colspan="2">${currentCategory}</td>`;
+                    tbody.appendChild(catTr);
+                }
+
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${comp.title}</td>
+                    <td class="radio-options">
+                        <label><input type="radio" name="${comp.id}" value="0" ${comp.score === 0 ? 'checked' : ''} onchange="calculateProgress()"> Not Competent (0)</label>
+                        <label><input type="radio" name="${comp.id}" value="1" ${comp.score === 1 ? 'checked' : ''} onchange="calculateProgress()"> Developing (1)</label>
+                        <label><input type="radio" name="${comp.id}" value="2" ${comp.score === 2 ? 'checked' : ''} onchange="calculateProgress()"> Competent (2)</label>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            calculateProgress();
+        };
+    }
+
+    function calculateProgress() {
+        const tbody = document.getElementById("competencyList");
+        const rows = tbody.querySelectorAll("tr:not(.category-header-row)");
+        let totalScore = 0;
+        let maxScore = rows.length * 2;
+
+        if (rows.length === 0 || maxScore === 0) return 0;
+
+        rows.forEach(tr => {
+            const checkedRadio = tr.querySelector("input[type='radio']:checked");
+            if (checkedRadio) {
+                totalScore += parseInt(checkedRadio.value);
+            }
+        });
+
+        const percentage = Math.round((totalScore / maxScore) * 100);
+
+        const progressBar = document.getElementById("progressBar");
+        progressBar.style.width = percentage + "%";
+        progressBar.innerText = percentage + "%";
+
+        const badge = document.getElementById("readinessStatus");
+        if (percentage >= 85) {
+            badge.innerText = "Ready for TESDA Assessment";
+            badge.className = "status-badge status-ready";
+        } else if (percentage >= 50) {
+            badge.innerText = "Needs Further Refinement";
+            badge.className = "status-badge status-developing";
+        } else {
+            badge.innerText = "Requires Intensive Training";
+            badge.className = "status-badge status-not-ready";
+        }
+
+        return percentage;
+    }
+
+    function saveRatings() {
+        if (!currentProfileId) {
+            alert("Please select a profile first.");
+            return;
+        }
+
+        const transaction = db.transaction(["profiles"], "readwrite");
+        const store = transaction.objectStore("profiles");
+        const getRequest = store.get(currentProfileId);
+
+        getRequest.onsuccess = function () {
+            const profile = getRequest.result;
+
+            profile.ncOutcome = document.getElementById("ncOutcomeSelect").value;
+
+            profile.competencies.forEach(comp => {
+                const selected = document.querySelector(`input[name="${comp.id}"]:checked`);
+                if (selected) {
+                    comp.score = parseInt(selected.value);
+                }
+            });
+
+            store.put(profile);
+            alert("Assessment records saved successfully!");
+            renderSummaryTable();
+        };
+    }
+
+    function printIndividualCertificate() {
+        if (!currentProfileId) {
+            alert("Please select a profile first to print an individual report.");
+            return;
+        }
+
+        const transaction = db.transaction(["profiles"], "readonly");
+        const store = transaction.objectStore("profiles");
+        const request = store.get(currentProfileId);
+
+        request.onsuccess = function () {
+            const profile = request.result;
+
+            document.getElementById("certName").innerText = profile.name;
+            document.getElementById("certRole").innerText = profile.role;
+            document.getElementById("certQual").innerText = profile.qualification;
+            document.getElementById("certDate").innerText = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+            if (profile.role === "Student") {
+                document.getElementById("certLrnRow").style.display = "block";
+                document.getElementById("certLrn").innerText = profile.lrn || "N/A";
+
+                document.getElementById("certClassRow").style.display = "block";
+                document.getElementById("certClass").innerText = `${profile.gradeLevel} - ${profile.section}`;
+            } else {
+                document.getElementById("certLrnRow").style.display = "none";
+                document.getElementById("certClassRow").style.display = "none";
+            }
+
+            const certBody = document.getElementById("certCompetencyBody");
+            certBody.innerHTML = "";
+
+            let totalScore = 0;
+            let maxScore = profile.competencies.length * 2;
+            let currentCat = "";
+
+            profile.competencies.forEach(c => {
+                totalScore += (c.score || 0);
+
+                if (c.category !== currentCat) {
+                    currentCat = c.category;
+                    const catRow = document.createElement("tr");
+                    catRow.innerHTML = `<td colspan="2" style="background:#e8f5e9; font-weight:bold;">${currentCat}</td>`;
+                    certBody.appendChild(catRow);
+                }
+
+                let ratingText = "Not Competent (0)";
+                if (c.score === 1) ratingText = "Developing (1)";
+                if (c.score === 2) ratingText = "Competent (2)";
+
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${c.title}</td>
+                    <td style="text-align: center;">${ratingText}</td>
+                `;
+                certBody.appendChild(row);
+            });
+
+            let pct = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
+            document.getElementById("certScorePct").innerText = pct + "%";
+
+            let readinessLevel = "Requires Intensive Training";
+            if (pct >= 85) readinessLevel = "Ready for TESDA Assessment";
+            else if (pct >= 50) readinessLevel = "Needs Further Refinement";
+
+            document.getElementById("certReadinessLevel").innerText = readinessLevel;
+            document.getElementById("certFinalOutcome").innerText = (profile.ncOutcome || "Pending").toUpperCase();
+
+            document.body.classList.add("print-individual");
+            window.print();
+            document.body.classList.remove("print-individual");
+        };
+    }
+
+    function updateSectionFilterDropdown(profiles) {
+        const select = document.getElementById("chartSectionFilter");
+        const bulkSelect = document.getElementById("bulkTargetSection");
+        const batchRatingSelect = document.getElementById("batchRatingSection");
+        
+        const currentVal = select.value;
+        const currentBulkVal = bulkSelect.value;
+        const currentBatchRatingVal = batchRatingSelect.value;
+
+        const sections = new Set();
+        profiles.forEach(p => {
+            if (p.role === "Student" && p.section) {
+                sections.add(p.section);
+            }
+        });
+
+        select.innerHTML = '<option value="All">All Sections (Entire Roster)</option>';
+        bulkSelect.innerHTML = '<option value="">-- Select Section --</option>';
+        batchRatingSelect.innerHTML = '<option value="">-- Select Section --</option>';
+
+        sections.forEach(sec => {
+            const opt = document.createElement("option");
+            opt.value = sec;
+            opt.innerText = `Section: ${sec}`;
+            select.appendChild(opt);
+
+            const optBulk = document.createElement("option");
+            optBulk.value = sec;
+            optBulk.innerText = `Section: ${sec}`;
+            bulkSelect.appendChild(optBulk);
+
+            const optBatchRating = document.createElement("option");
+            optBatchRating.value = sec;
+            optBatchRating.innerText = `Section: ${sec}`;
+            batchRatingSelect.appendChild(optBatchRating);
+        });
+
+        if (sections.has(currentVal)) select.value = currentVal;
+        if (sections.has(currentBulkVal)) bulkSelect.value = currentBulkVal;
+        if (sections.has(currentBatchRatingVal)) batchRatingSelect.value = currentBatchRatingVal;
+    }
+
+    // Export Section Analytics to CSV
+    function exportSectionAnalyticsCSV() {
+        const selectedSection = document.getElementById("chartSectionFilter").value;
+
+        const transaction = db.transaction(["profiles"], "readonly");
+        const store = transaction.objectStore("profiles");
+        const request = store.getAll();
+
+        request.onsuccess = function () {
+            const profiles = request.result;
+
+            const filteredProfiles = profiles.filter(p => {
+                if (selectedSection === "All") return true;
+                return p.role === "Student" && p.section === selectedSection;
+            });
+
+            const qualStats = {};
+            const qualifications = [
+                "Cookery NC II", "Technical Drafting NC II", "Food Processing NC II", 
+                "Visual Graphic Design NC II", "Animation NC II", 
+                "Food & Beverage Services NC II", "Bread & Pastry Production NC II"
+            ];
+
+            qualifications.forEach(q => {
+                qualStats[q] = { total: 0, passed: 0, completion: 0, failed: 0, pending: 0 };
+            });
+
+            filteredProfiles.forEach(p => {
+                const q = p.qualification;
+                if (qualStats[q]) {
+                    qualStats[q].total++;
+                    const outcome = p.ncOutcome || "Pending";
+                    if (outcome === "Passed") qualStats[q].passed++;
+                    else if (outcome === "For Completion") qualStats[q].completion++;
+                    else if (outcome === "Failed") qualStats[q].failed++;
+                    else qualStats[q].pending++;
+                }
+            });
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += `Section Analytics Report: ${selectedSection}\n`;
+            csvContent += `Qualification,Total Candidates,Passed,For Completion,Failed,Pending,Pass Rate (%)\n`;
+
+            qualifications.forEach(q => {
+                const s = qualStats[q];
+                const rate = s.total > 0 ? Math.round((s.passed / s.total) * 100) : 0;
+                csvContent += `"${q}",${s.total},${s.passed},${s.completion},${s.failed},${s.pending},${rate}%\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Analytics_Summary_${selectedSection.replace(/\s+/g, '_')}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        };
+    }
+
+    // Export Directory Table to CSV / Excel Format
+    function exportDirectoryCSV() {
+        const transaction = db.transaction(["profiles"], "readonly");
+        const store = transaction.objectStore("profiles");
+        const request = store.getAll();
+
+        request.onsuccess = function () {
+            const profiles = request.result;
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += `Role,LRN,Full Name,Grade Level,Section,Qualification,Readiness %,TESDA Assessment Outcome\n`;
+
+            profiles.forEach(p => {
+                let scoreSum = 0;
+                let max = p.competencies.length * 2;
+                p.competencies.forEach(c => scoreSum += (c.score || 0));
+                let pct = max > 0 ? Math.round((scoreSum / max) * 100) : 0;
+
+                const lrn = p.role === "Student" ? (p.lrn || "N/A") : "N/A";
+                const grade = p.role === "Student" ? (p.gradeLevel || "N/A") : "N/A";
+                const section = p.role === "Student" ? (p.section || "N/A") : "N/A";
+                const outcome = p.ncOutcome || "Pending";
+
+                csvContent += `"${p.role}","${lrn}","${p.name}","${grade}","${section}","${p.qualification}",${pct}%,"${outcome}"\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `SDO_Meycauayan_TVL_Master_Directory_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        };
+    }
+
+    // Render Charts filtered by Section
+    function updateCharts(profiles) {
+        const selectedSection = document.getElementById("chartSectionFilter").value;
+
+        const filteredProfiles = profiles.filter(p => {
+            if (selectedSection === "All") return true;
+            return p.role === "Student" && p.section === selectedSection;
+        });
+
+        const qualCounts = {
+            "Cookery NC II": { total: 0, passed: 0 },
+            "Technical Drafting NC II": { total: 0, passed: 0 },
+            "Food Processing NC II": { total: 0, passed: 0 },
+            "Visual Graphic Design NC II": { total: 0, passed: 0 },
+            "Animation NC II": { total: 0, passed: 0 },
+            "Food & Beverage Services NC II": { total: 0, passed: 0 },
+            "Bread & Pastry Production NC II": { total: 0, passed: 0 }
+        };
+
+        const outcomeCounts = {
+            "Passed": 0,
+            "For Completion": 0,
+            "Failed": 0,
+            "Pending": 0
+        };
+
+        filteredProfiles.forEach(p => {
+            const qual = p.qualification;
+            if (qualCounts[qual]) {
+                qualCounts[qual].total++;
+                if (p.ncOutcome === "Passed") {
+                    qualCounts[qual].passed++;
+                }
+            }
+
+            const outcome = p.ncOutcome || "Pending";
+            if (outcomeCounts[outcome] !== undefined) {
+                outcomeCounts[outcome]++;
+            } else {
+                outcomeCounts["Pending"]++;
+            }
+        });
+
+        const qualLabels = Object.keys(qualCounts).map(q => q.replace(" NC II", ""));
+        const qualRates = Object.keys(qualCounts).map(q => {
+            const item = qualCounts[q];
+            return item.total > 0 ? Math.round((item.passed / item.total) * 100) : 0;
+        });
+
+        // 1. Bar Chart: Pass Rates by Qualification
+        const ctxQual = document.getElementById("qualPassChart").getContext("2d");
+        if (qualPassChartInstance) qualPassChartInstance.destroy();
+
+        qualPassChartInstance = new Chart(ctxQual, {
+            type: "bar",
+            data: {
+                labels: qualLabels,
+                datasets: [{
+                    label: "Pass Rate (%)",
+                    data: qualRates,
+                    backgroundColor: "#2d6a4f",
+                    borderColor: "#1b4332",
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: { callback: value => value + "%" }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+        // 2. Doughnut Chart: Outcome Distribution
+        const ctxOutcome = document.getElementById("outcomeChart").getContext("2d");
+        if (outcomeChartInstance) outcomeChartInstance.destroy();
+
+        outcomeChartInstance = new Chart(ctxOutcome, {
+            type: "doughnut",
+            data: {
+                labels: ["Passed", "For Completion", "Failed", "Pending"],
+                datasets: [{
+                    data: [
+                        outcomeCounts["Passed"],
+                        outcomeCounts["For Completion"],
+                        outcomeCounts["Failed"],
+                        outcomeCounts["Pending"]
+                    ],
+                    backgroundColor: ["#2e7d32", "#ed6c02", "#d32f2f", "#6c757d"]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: "bottom" }
+                }
+            }
+        });
+    }
+
+    function renderSummaryTable() {
+        const transaction = db.transaction(["profiles"], "readonly");
+        const store = transaction.objectStore("profiles");
+        const request = store.getAll();
+
+        request.onsuccess = function () {
+            const profiles = request.result;
+
+            updateSectionFilterDropdown(profiles);
+            updateCharts(profiles);
+
+            const searchQuery = document.getElementById("summarySearchInput").value.toLowerCase().trim();
+            const filterRole = document.getElementById("summaryFilterRole").value;
+            const filterQual = document.getElementById("summaryFilterQual").value;
+            const filterOutcome = document.getElementById("summaryFilterOutcome").value;
+
+            const tbody = document.getElementById("summaryTableBody");
+            tbody.innerHTML = "";
+
+            let countTeachers = 0;
+            let countStudents = 0;
+            let countPassed = 0;
+
+            profiles.forEach(p => {
+                if (p.role === "Teacher") countTeachers++;
+                if (p.role === "Student") countStudents++;
+                if (p.ncOutcome === "Passed") countPassed++;
+
+                let scoreSum = 0;
+                let max = p.competencies.length * 2;
+                p.competencies.forEach(c => scoreSum += (c.score || 0));
+                let pct = max > 0 ? Math.round((scoreSum / max) * 100) : 0;
+
+                const matchesRole = (filterRole === "All" || p.role === filterRole);
+                const matchesQual = (filterQual === "All" || p.qualification === filterQual);
+                const matchesOutcome = (filterOutcome === "All" || (p.ncOutcome || "Pending") === filterOutcome);
+                
+                const matchesSearch = searchQuery === "" || 
+                    p.name.toLowerCase().includes(searchQuery) ||
+                    (p.lrn && p.lrn.toLowerCase().includes(searchQuery)) ||
+                    p.role.toLowerCase().includes(searchQuery) ||
+                    p.qualification.toLowerCase().includes(searchQuery) ||
+                    (p.section && p.section.toLowerCase().includes(searchQuery)) ||
+                    (p.gradeLevel && p.gradeLevel.toLowerCase().includes(searchQuery));
+
+                if (matchesRole && matchesQual && matchesOutcome && matchesSearch) {
+                    let outcomeClass = "outcome-pending";
+                    let outcomeText = p.ncOutcome || "Pending";
+
+                    if (p.ncOutcome === "Passed") {
+                        outcomeClass = "outcome-passed";
+                        outcomeText = "Passed";
+                    } else if (p.ncOutcome === "For Completion") {
+                        outcomeClass = "outcome-completion";
+                        outcomeText = "For Completion";
+                    } else if (p.ncOutcome === "Failed") {
+                        outcomeClass = "outcome-failed";
+                        outcomeText = "Failed";
+                    }
+
+                    const lrnDisplay = (p.role === "Student" && p.lrn) ? p.lrn : "N/A";
+                    const gradeDisplay = (p.role === "Student" && p.gradeLevel) ? p.gradeLevel : "N/A";
+                    const sectionDisplay = (p.role === "Student" && p.section) ? p.section : "N/A";
+
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td><strong>${p.role}</strong></td>
+                        <td>${lrnDisplay}</td>
+                        <td>${p.name}</td>
+                        <td>${gradeDisplay}</td>
+                        <td>${sectionDisplay}</td>
+                        <td>${p.qualification}</td>
+                        <td><strong>${pct}%</strong></td>
+                        <td><span class="outcome-badge ${outcomeClass}">${outcomeText}</span></td>
+                        <td class="action-col" style="text-align: center;">
+                            <button class="btn btn-sm" onclick="loadSelectedProfile(${p.id})">Evaluate</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteProfile(${p.id}, '${p.name.replace(/'/g, "\\'")}')">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+
+            if (tbody.children.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;">No matching profiles found in database.</td></tr>`;
+            }
+
+            document.getElementById("statTotal").innerText = profiles.length;
+            document.getElementById("statTeachers").innerText = countTeachers;
+            document.getElementById("statStudents").innerText = countStudents;
+            document.getElementById("statReady").innerText = countPassed;
+        };
+    }
+
+    function deleteProfile(id, name) {
+        if (confirm(`Are you sure you want to delete the record for "${name}"? This action cannot be undone.`)) {
+            const transaction = db.transaction(["profiles"], "readwrite");
+            const store = transaction.objectStore("profiles");
+            store.delete(id);
+
+            transaction.oncomplete = function () {
+                alert(`Profile for "${name}" has been deleted.`);
+                
+                if (currentProfileId === id) {
+                    currentProfileId = null;
+                    document.getElementById("displayRole").innerText = "-";
+                    document.getElementById("displayQual").innerText = "-";
+                    document.getElementById("lrnDetailsContainer").style.display = "none";
+                    document.getElementById("classDetailsContainer").style.display = "none";
+                    document.getElementById("progressBar").style.width = "0%";
+                    document.getElementById("progressBar").innerText = "0%";
+                    document.getElementById("competencyList").innerHTML = '<tr><td colspan="2">Please select a profile above to evaluate basic, common, and core competencies.</td></tr>';
+                }
+
+                loadProfileList();
+                renderSummaryTable();
+            };
+        }
+    }
+
+    function clearAllData() {
+        if (confirm("WARNING: Are you sure you want to delete ALL teacher and student records? This process cannot be undone.")) {
+            const transaction = db.transaction(["profiles"], "readwrite");
+            const store = transaction.objectStore("profiles");
+            store.clear();
+
+            transaction.oncomplete = function () {
+                alert("All records have been cleared.");
+                location.reload();
+            };
+        }
+    }
+
+    function exportData() {
+        const transaction = db.transaction(["profiles"], "readonly");
+        const store = transaction.objectStore("profiles");
+        const request = store.getAll();
+
+        request.onsuccess = function () {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(request.result, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "sdo_meycauayan_nc2_monitoring_backup.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        };
+    }
+</script>
+
+</body>
+</html>
