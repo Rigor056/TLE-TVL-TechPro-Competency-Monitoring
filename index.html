@@ -111,6 +111,20 @@
             padding-bottom: 8px;
         }
 
+        /* Sync Status Bar */
+        .sync-bar {
+            background-color: #e8f5e9;
+            border: 1px solid #c3e6cb;
+            border-radius: 6px;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
         /* Metric Dashboard Summary Cards */
         .metrics-grid {
             display: grid;
@@ -216,12 +230,6 @@
             gap: 15px;
         }
 
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
         .progress-bar-bg {
             background-color: #e9ecef;
             border-radius: 20px;
@@ -257,7 +265,6 @@
         .status-developing { background-color: var(--warning-color); }
         .status-not-ready { background-color: var(--danger-color); }
 
-        /* NC Outcome Specific Badges */
         .outcome-badge {
             display: inline-block;
             padding: 4px 10px;
@@ -317,6 +324,7 @@
         }
 
         .btn:hover { background-color: var(--secondary-color); }
+        .btn:disabled { background-color: #95a5a6; cursor: not-allowed; }
         .btn-secondary { background-color: #6c757d; }
         .btn-info { background-color: #0d6efd; }
         .btn-info:hover { background-color: #0b5ed7; }
@@ -446,6 +454,7 @@
             }
 
             body:not(.print-individual) .non-printable, 
+            body:not(.print-individual) .sync-bar,
             body:not(.print-individual) .card:nth-of-type(1), 
             body:not(.print-individual) .card:nth-of-type(3), 
             body:not(.print-individual) .card:nth-of-type(4), 
@@ -517,7 +526,7 @@
         <div class="header-title-container">
             <h2>Department of Education • Region III</h2>
             <h1>Schools Division Office of City of Meycauayan</h1>
-            <p>TLE / TechPro Teachers & Students Competency Readiness Monitoring System</p>
+            <p>TLE / TechPro Teachers & Students *Competency Readiness Monitoring System</p>
         </div>
 
         <!-- DepEd Logo Right -->
@@ -525,6 +534,14 @@
             <img src="1.png" alt="DepEd Seal" class="header-logo" onerror="this.onerror=null; this.src='https://upload.wikimedia.org/wikipedia/commons/f/fa/Department_of_Education_%28DepEd%29.svg';">
         </div>
     </header>
+
+    <!-- Cloud Sync Status Bar -->
+    <div class="sync-bar non-printable">
+        <div>
+            <strong>Cloud Database Status:</strong> <span id="syncStatusText" style="color: #1b4332;">Ready</span>
+        </div>
+        <button type="button" class="btn btn-sm btn-success" id="btnManualSync" onclick="syncFromGoogleSheet()">Sync / Refresh Data from Google Sheets</button>
+    </div>
 
     <!-- Metric Dashboard Summary Cards -->
     <div class="metrics-grid">
@@ -643,7 +660,7 @@
                 <input type="file" id="csvFileInput" accept=".csv" style="padding: 6px;">
             </div>
             <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
-                <button type="button" class="btn btn-success" onclick="processCSVImport()">Import CSV Roster</button>
+                <button type="button" class="btn btn-success" id="btnImportCSV" onclick="processCSVImport()">Import CSV Roster</button>
                 <button type="button" class="btn btn-secondary" onclick="downloadSampleCSV()">Download Sample CSV Template</button>
             </div>
         </div>
@@ -777,7 +794,7 @@
                 </select>
             </div>
             <div>
-                <button type="button" class="btn" onclick="saveRatings()">Save Assessment Data</button>
+                <button type="button" class="btn" id="btnSaveRatings" onclick="saveRatings()">Save Assessment Data</button>
             </div>
         </div>
     </div>
@@ -861,10 +878,9 @@
 <!-- Printable Individual Certificate Area -->
 <div id="printableCertificateArea">
     <div class="cert-header">
-        <h3>Department of Education</h3>
-		<h3>Region III</h3>
+        <h3>Department of Education • Region III</h3>
         <h1>Schools Division Office of City of Meycauayan</h1>
-        <p>Technical Professional (TechPro) / TLE Pre-Assessment Readiness Certificate</p>
+        <p>Technical-Vocational-Livelihood (TVL) / TLE Pre-Assessment Readiness Certificate</p>
     </div>
 
     <div class="cert-info-grid">
@@ -905,17 +921,22 @@
 
     <div class="cert-signatures">
         <div class="cert-sig-block">
-            <div class="cert-sig-line">TechPro Teacher / Assessor</div>
+            <div class="cert-sig-line">TVL Master Teacher / Assessor</div>
             <div style="font-size: 11px;">Signature Over Printed Name</div>
         </div>
         <div class="cert-sig-block">
-            <div class="cert-sig-line">School Head / TechPro Coordinator</div>
+            <div class="cert-sig-line">School Head / TVL Coordinator</div>
             <div style="font-size: 11px;">Signature Over Printed Name</div>
         </div>
     </div>
 </div>
 
 <script>
+    // =========================================================================
+    // ILAGAY DITO ANG IYONG GOOGLE APPS SCRIPT WEB APP URL:
+    // =========================================================================
+    const GAS_WEB_APP_URL = "ILAGAY_DITO_ANG_WEB_APP_URL_MO";
+
     // TESDA Basic Competencies across all NC II programs
     const basicCompetencies = [
         "Participate in workplace communication",
@@ -1032,9 +1053,6 @@
         ]
     };
 
-   // ILAGAY DITO ANG IYONG GOOGLE APPS SCRIPT WEB APP URL:
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwVJ50SzgMn-pGvofPaE2DHXpMCutUXva6HkFahgpj1N0suklnNoPZ7ykAqlBSXAAw/exec";
-
     let allProfilesCache = [];
     let currentProfileId = null;
     let qualPassChartInstance = null;
@@ -1048,10 +1066,19 @@
 
     // Kunin ang pinakabagong data mula sa Google Sheet
     async function syncFromGoogleSheet() {
-        if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes("https://script.google.com/macros/s/AKfycbwVJ50SzgMn-pGvofPaE2DHXpMCutUXva6HkFahgpj1N0suklnNoPZ7ykAqlBSXAAw/exec")) {
+        const statusEl = document.getElementById("syncStatusText");
+        const btnSync = document.getElementById("btnManualSync");
+
+        if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes("ILAGAY_DITO")) {
+            statusEl.innerText = "Not Connected (Missing Web App URL)";
+            statusEl.style.color = "#c0392b";
             alert("Paalala: Hindi pa nailalagay ang Google Apps Script Web App URL sa code.");
             return;
         }
+
+        statusEl.innerText = "Syncing with Google Sheets...";
+        statusEl.style.color = "#e67e22";
+        btnSync.disabled = true;
 
         const tbody = document.getElementById("summaryTableBody");
         tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; font-weight:bold; color:#1b4332;">Syncing records from Google Sheets... Please wait.</td></tr>`;
@@ -1068,14 +1095,26 @@
 
             loadProfileList();
             renderSummaryTable();
+
+            const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            statusEl.innerText = `Connected • Last synced at ${now}`;
+            statusEl.style.color = "#1b4332";
         } catch (error) {
             console.error("Sync error:", error);
+            statusEl.innerText = "Connection Failed";
+            statusEl.style.color = "#c0392b";
             tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:red;">Failed to connect to Google Sheets. Check your internet or Web App URL.</td></tr>`;
+        } finally {
+            btnSync.disabled = false;
         }
     }
 
     // Helper function para magpadala ng updates sa Google Sheet
     async function postToGoogleSheet(payload) {
+        const statusEl = document.getElementById("syncStatusText");
+        statusEl.innerText = "Saving to Google Sheets...";
+        statusEl.style.color = "#e67e22";
+
         try {
             const response = await fetch(GAS_WEB_APP_URL, {
                 method: "POST",
@@ -1085,6 +1124,8 @@
             return await response.json();
         } catch (error) {
             console.error("Save error:", error);
+            statusEl.innerText = "Save Failed";
+            statusEl.style.color = "#c0392b";
             alert("Nagkaroon ng error sa pag-save sa Google Sheet. Pakisubukan muli.");
             throw error;
         }
@@ -1148,13 +1189,16 @@
             competencies: generateCompetenciesList(qualification)
         };
 
-        await postToGoogleSheet({ action: "add", profile: newProfile });
-        alert(`${role} profile saved to Google Sheets!`);
-        document.getElementById("addProfileForm").reset();
-        toggleStudentFields();
-        submitBtn.disabled = false;
-        submitBtn.innerText = "Add Profile to Database";
-        await syncFromGoogleSheet();
+        try {
+            await postToGoogleSheet({ action: "add", profile: newProfile });
+            alert(`${role} profile saved to Google Sheets!`);
+            document.getElementById("addProfileForm").reset();
+            toggleStudentFields();
+            await syncFromGoogleSheet();
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerText = "Add Profile to Database";
+        }
     }
 
     async function executeBatchRatingUpdate() {
@@ -1220,71 +1264,85 @@
             return;
         }
 
+        const btnImport = document.getElementById("btnImportCSV");
+        btnImport.disabled = true;
+        btnImport.innerText = "Importing to Google Sheets...";
+
         const reader = new FileReader();
         reader.onload = async function (e) {
-            const text = e.target.result;
-            const lines = text.split(/\r\n|\n/);
-            if (lines.length < 2) return;
+            try {
+                const text = e.target.result;
+                const lines = text.split(/
+|
+/);
+                if (lines.length < 2) return;
 
-            const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
-            const lrnIdx = headers.findIndex(h => h.includes('lrn'));
-            const nameIdx = headers.findIndex(h => h.includes('name'));
-            const gradeIdx = headers.findIndex(h => h.includes('grade'));
-            const sectionIdx = headers.findIndex(h => h.includes('section'));
-            const qualIdx = headers.findIndex(h => h.includes('qual') || h.includes('course'));
+                const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
+                const lrnIdx = headers.findIndex(h => h.includes('lrn'));
+                const nameIdx = headers.findIndex(h => h.includes('name'));
+                const gradeIdx = headers.findIndex(h => h.includes('grade'));
+                const sectionIdx = headers.findIndex(h => h.includes('section'));
+                const qualIdx = headers.findIndex(h => h.includes('qual') || h.includes('course'));
 
-            if (nameIdx === -1) {
-                alert("CSV must contain a 'Full Name' column.");
-                return;
-            }
-
-            let importCount = 0;
-            for (let i = 1; i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (!line) continue;
-
-                const row = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || line.split(',');
-                const cleanRow = row.map(cell => cell.trim().replace(/^"|"$/g, ''));
-                const name = cleanRow[nameIdx] || "";
-                if (!name) continue;
-
-                const lrn = lrnIdx !== -1 ? (cleanRow[lrnIdx] || "") : "";
-                const gradeLevel = gradeIdx !== -1 ? (cleanRow[gradeIdx] || "Grade 11") : "Grade 11";
-                const section = sectionIdx !== -1 ? (cleanRow[sectionIdx] || "TVL-A") : "TVL-A";
-                let qual = qualIdx !== -1 ? (cleanRow[qualIdx] || "Cookery NC II") : "Cookery NC II";
-
-                if (!coreCompetenciesMap[qual]) {
-                    const matchedKey = Object.keys(coreCompetenciesMap).find(k => k.toLowerCase().includes(qual.toLowerCase()));
-                    qual = matchedKey || "Cookery NC II";
+                if (nameIdx === -1) {
+                    alert("CSV must contain a 'Full Name' column.");
+                    return;
                 }
 
-                const studentProfile = {
-                    role: "Student",
-                    name,
-                    lrn,
-                    qualification: qual,
-                    gradeLevel,
-                    section,
-                    ncOutcome: "Pending",
-                    competencies: generateCompetenciesList(qual)
-                };
+                const batchList = [];
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
 
-                await postToGoogleSheet({ action: "add", profile: studentProfile });
-                importCount++;
+                    const row = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || line.split(',');
+                    const cleanRow = row.map(cell => cell.trim().replace(/^"|"$/g, ''));
+                    const name = cleanRow[nameIdx] || "";
+                    if (!name) continue;
+
+                    const lrn = lrnIdx !== -1 ? (cleanRow[lrnIdx] || "") : "";
+                    const gradeLevel = gradeIdx !== -1 ? (cleanRow[gradeIdx] || "Grade 11") : "Grade 11";
+                    const section = sectionIdx !== -1 ? (cleanRow[sectionIdx] || "TVL-A") : "TVL-A";
+                    let qual = qualIdx !== -1 ? (cleanRow[qualIdx] || "Cookery NC II") : "Cookery NC II";
+
+                    if (!coreCompetenciesMap[qual]) {
+                        const matchedKey = Object.keys(coreCompetenciesMap).find(k => k.toLowerCase().includes(qual.toLowerCase()));
+                        qual = matchedKey || "Cookery NC II";
+                    }
+
+                    batchList.push({
+                        role: "Student",
+                        name,
+                        lrn,
+                        qualification: qual,
+                        gradeLevel,
+                        section,
+                        ncOutcome: "Pending",
+                        competencies: generateCompetenciesList(qual)
+                    });
+                }
+
+                if (batchList.length > 0) {
+                    await postToGoogleSheet({ action: "bulkAdd", profiles: batchList });
+                    alert(`Successfully uploaded ${batchList.length} records to Google Sheets!`);
+                    fileInput.value = "";
+                    await syncFromGoogleSheet();
+                }
+            } finally {
+                btnImport.disabled = false;
+                btnImport.innerText = "Import CSV Roster";
             }
-
-            alert(`Successfully uploaded ${importCount} records to Google Sheets!`);
-            fileInput.value = "";
-            await syncFromGoogleSheet();
         };
         reader.readAsText(file);
     }
 
     function downloadSampleCSV() {
         let csvContent = "data:text/csv;charset=utf-8,";
-        csvContent += `LRN,Full Name,Grade Level,Section,Qualification\n`;
-        csvContent += `101234567891,"Juan Dela Cruz","Grade 11","TVL-A","Cookery NC II"\n`;
-        csvContent += `101234567892,"Maria Santos","Grade 12","TVL-B","Technical Drafting NC II"\n`;
+        csvContent += `LRN,Full Name,Grade Level,Section,Qualification
+`;
+        csvContent += `101234567891,"Juan Dela Cruz","Grade 11","TVL-A","Cookery NC II"
+`;
+        csvContent += `101234567892,"Maria Santos","Grade 12","TVL-B","Technical Drafting NC II"
+`;
         const link = document.createElement("a");
         link.setAttribute("href", encodeURI(csvContent));
         link.setAttribute("download", "sample_student_roster.csv");
@@ -1413,15 +1471,24 @@
         const profile = allProfilesCache.find(p => String(p.id) === String(currentProfileId));
         if (!profile) return;
 
-        profile.ncOutcome = document.getElementById("ncOutcomeSelect").value;
-        profile.competencies.forEach(comp => {
-            const selected = document.querySelector(`input[name="${comp.id}"]:checked`);
-            if (selected) comp.score = parseInt(selected.value);
-        });
+        const btnSave = document.getElementById("btnSaveRatings");
+        btnSave.disabled = true;
+        btnSave.innerText = "Saving...";
 
-        await postToGoogleSheet({ action: "update", profile: profile });
-        alert("Assessment records saved to Google Sheets!");
-        await syncFromGoogleSheet();
+        try {
+            profile.ncOutcome = document.getElementById("ncOutcomeSelect").value;
+            profile.competencies.forEach(comp => {
+                const selected = document.querySelector(`input[name="${comp.id}"]:checked`);
+                if (selected) comp.score = parseInt(selected.value);
+            });
+
+            await postToGoogleSheet({ action: "update", profile: profile });
+            alert("Assessment records saved to Google Sheets!");
+            await syncFromGoogleSheet();
+        } finally {
+            btnSave.disabled = false;
+            btnSave.innerText = "Save Assessment Data";
+        }
     }
 
     function printIndividualCertificate() {
@@ -1525,11 +1592,14 @@
         });
 
         let csvContent = "data:text/csv;charset=utf-8,";
-        csvContent += `Section Analytics Report: ${selectedSection}\nQualification,Total Candidates,Passed,For Completion,Failed,Pending,Pass Rate (%)\n`;
+        csvContent += `Section Analytics Report: ${selectedSection}
+Qualification,Total Candidates,Passed,For Completion,Failed,Pending,Pass Rate (%)
+`;
         qualifications.forEach(q => {
             const s = qualStats[q];
             const rate = s.total > 0 ? Math.round((s.passed / s.total) * 100) : 0;
-            csvContent += `"${q}",${s.total},${s.passed},${s.completion},${s.failed},${s.pending},${rate}%\n`;
+            csvContent += `"${q}",${s.total},${s.passed},${s.completion},${s.failed},${s.pending},${rate}%
+`;
         });
 
         const link = document.createElement("a");
@@ -1542,12 +1612,14 @@
 
     function exportDirectoryCSV() {
         let csvContent = "data:text/csv;charset=utf-8,";
-        csvContent += `Role,LRN,Full Name,Grade Level,Section,Qualification,Readiness %,TESDA Assessment Outcome\n`;
+        csvContent += `Role,LRN,Full Name,Grade Level,Section,Qualification,Readiness %,TESDA Assessment Outcome
+`;
         allProfilesCache.forEach(p => {
             let scoreSum = 0, max = p.competencies.length * 2;
             p.competencies.forEach(c => scoreSum += (c.score || 0));
             let pct = max > 0 ? Math.round((scoreSum / max) * 100) : 0;
-            csvContent += `"${p.role}","${p.lrn || 'N/A'}","${p.name}","${p.gradeLevel || 'N/A'}","${p.section || 'N/A'}","${p.qualification}",${pct}%,"${p.ncOutcome || 'Pending'}"\n`;
+            csvContent += `"${p.role}","${p.lrn || 'N/A'}","${p.name}","${p.gradeLevel || 'N/A'}","${p.section || 'N/A'}","${p.qualification}",${pct}%,"${p.ncOutcome || 'Pending'}"
+`;
         });
 
         const link = document.createElement("a");
@@ -1649,7 +1721,7 @@
                     <td><span class="outcome-badge ${outcomeClass}">${p.ncOutcome || "Pending"}</span></td>
                     <td class="action-col" style="text-align: center;">
                         <button class="btn btn-sm" onclick="loadSelectedProfile('${p.id}')">Evaluate</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteProfile('${p.id}', '${p.name.replace(/'/g, "\\'")}')">Delete</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteProfile('${p.id}', '${p.name.replace(/'/g, "\'")}')">Delete</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
