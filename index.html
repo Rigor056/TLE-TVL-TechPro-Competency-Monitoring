@@ -1032,31 +1032,63 @@
         ]
     };
 
-    let db;
+   // ILAGAY DITO ANG IYONG GOOGLE APPS SCRIPT WEB APP URL:
+    const GAS_WEB_APP_URL = "ILAGAY_DITO_ANG_WEB_APP_URL_MO";
+
+    let allProfilesCache = [];
     let currentProfileId = null;
     let qualPassChartInstance = null;
     let outcomeChartInstance = null;
 
-    // Database Initialization
-    const request = indexedDB.open("TLENCMonitorDB_Meycauayan_V14", 1);
-
-    request.onupgradeneeded = function (event) {
-        db = event.target.result;
-        if (!db.objectStoreNames.contains("profiles")) {
-            db.createObjectStore("profiles", { keyPath: "id", autoIncrement: true });
-        }
-    };
-
-    request.onsuccess = function (event) {
-        db = event.target.result;
+    // Initial Load pagkabukas ng page
+    window.onload = async function () {
         toggleStudentFields();
-        loadProfileList();
-        renderSummaryTable();
+        await syncFromGoogleSheet();
     };
 
-    request.onerror = function (event) {
-        console.error("Database error:", event.target.errorCode);
-    };
+    // Kunin ang pinakabagong data mula sa Google Sheet
+    async function syncFromGoogleSheet() {
+        if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes("ILAGAY_DITO")) {
+            alert("Paalala: Hindi pa nailalagay ang Google Apps Script Web App URL sa code.");
+            return;
+        }
+
+        const tbody = document.getElementById("summaryTableBody");
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; font-weight:bold; color:#1b4332;">Syncing records from Google Sheets... Please wait.</td></tr>`;
+
+        try {
+            const response = await fetch(GAS_WEB_APP_URL);
+            const data = await response.json();
+            allProfilesCache = data.map(p => ({
+                ...p,
+                id: String(p.id),
+                lrn: String(p.lrn || "").replace(/^'/, ""),
+                competencies: Array.isArray(p.competencies) ? p.competencies : []
+            }));
+
+            loadProfileList();
+            renderSummaryTable();
+        } catch (error) {
+            console.error("Sync error:", error);
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:red;">Failed to connect to Google Sheets. Check your internet or Web App URL.</td></tr>`;
+        }
+    }
+
+    // Helper function para magpadala ng updates sa Google Sheet
+    async function postToGoogleSheet(payload) {
+        try {
+            const response = await fetch(GAS_WEB_APP_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(payload)
+            });
+            return await response.json();
+        } catch (error) {
+            console.error("Save error:", error);
+            alert("Nagkaroon ng error sa pag-save sa Google Sheet. Pakisubukan muli.");
+            throw error;
+        }
+    }
 
     function toggleStudentFields() {
         const role = document.getElementById("role").value;
@@ -1074,37 +1106,30 @@
 
     function generateCompetenciesList(qualification) {
         const units = [];
-
-        // 1. Basic
         basicCompetencies.forEach((title, idx) => {
             units.push({ id: "basic_" + (idx + 1), category: "Basic Competencies", title: title, score: 0 });
         });
-
-        // 2. Common
         const commonUnits = commonCompetenciesMap[qualification] || [];
         commonUnits.forEach((title, idx) => {
             units.push({ id: "common_" + (idx + 1), category: "Common Competencies", title: title, score: 0 });
         });
-
-        // 3. Core
         const coreUnits = coreCompetenciesMap[qualification] || [];
         coreUnits.forEach((title, idx) => {
             units.push({ id: "core_" + (idx + 1), category: "Core Competencies", title: title, score: 0 });
         });
-
         return units;
     }
 
-    function addProfile(event) {
+    async function addProfile(event) {
         event.preventDefault();
+        const submitBtn = event.target.querySelector("button[type='submit']");
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Saving to Google Sheet...";
 
         const role = document.getElementById("role").value;
         const name = document.getElementById("fullName").value;
         const qualification = document.getElementById("qualification").value;
-        
-        let lrn = "";
-        let gradeLevel = "";
-        let section = "";
+        let lrn = "", gradeLevel = "", section = "";
 
         if (role === "Student") {
             lrn = document.getElementById("lrn").value.trim();
@@ -1112,140 +1137,96 @@
             section = document.getElementById("section").value.trim();
         }
 
-        const competencies = generateCompetenciesList(qualification);
-
-        const newProfile = { 
-            role, 
-            name, 
-            lrn, 
-            qualification, 
-            gradeLevel, 
-            section, 
-            ncOutcome: "Pending", 
-            competencies 
+        const newProfile = {
+            role,
+            name,
+            lrn,
+            qualification,
+            gradeLevel,
+            section,
+            ncOutcome: "Pending",
+            competencies: generateCompetenciesList(qualification)
         };
 
-        const transaction = db.transaction(["profiles"], "readwrite");
-        const store = transaction.objectStore("profiles");
-        store.add(newProfile);
-
-        transaction.oncomplete = function () {
-            alert(`${role} profile created successfully!`);
-            document.getElementById("addProfileForm").reset();
-            toggleStudentFields();
-            loadProfileList();
-            renderSummaryTable();
-        };
+        await postToGoogleSheet({ action: "add", profile: newProfile });
+        alert(`${role} profile saved to Google Sheets!`);
+        document.getElementById("addProfileForm").reset();
+        toggleStudentFields();
+        submitBtn.disabled = false;
+        submitBtn.innerText = "Add Profile to Database";
+        await syncFromGoogleSheet();
     }
 
-    // Batch Update Competency Ratings Across Section
-    function executeBatchRatingUpdate() {
+    async function executeBatchRatingUpdate() {
         const targetSection = document.getElementById("batchRatingSection").value;
         const targetCategory = document.getElementById("batchRatingCategory").value;
         const targetScore = parseInt(document.getElementById("batchRatingScore").value);
 
         if (!targetSection) {
-            alert("Please select a target section to perform the batch rating update.");
+            alert("Please select a target section first.");
             return;
         }
 
-        let ratingLabel = targetScore === 2 ? "Competent (2)" : (targetScore === 1 ? "Developing (1)" : "Not Competent (0)");
+        if (!confirm(`Update "${targetCategory}" for ALL students in Section "${targetSection}"?`)) return;
 
-        if (!confirm(`Are you sure you want to set "${targetCategory}" to "${ratingLabel}" for ALL students in Section "${targetSection}"?`)) {
-            return;
-        }
+        const updatedProfiles = [];
+        allProfilesCache.forEach(p => {
+            if (p.role === "Student" && p.section === targetSection) {
+                p.competencies.forEach(comp => {
+                    if (targetCategory === "All" || comp.category === targetCategory) {
+                        comp.score = targetScore;
+                    }
+                });
+                updatedProfiles.push(p);
+            }
+        });
 
-        const transaction = db.transaction(["profiles"], "readwrite");
-        const store = transaction.objectStore("profiles");
-        const getRequest = store.getAll();
-
-        getRequest.onsuccess = function () {
-            const profiles = getRequest.result;
-            let updatedStudentsCount = 0;
-
-            profiles.forEach(p => {
-                if (p.role === "Student" && p.section === targetSection) {
-                    p.competencies.forEach(comp => {
-                        if (targetCategory === "All" || comp.category === targetCategory) {
-                            comp.score = targetScore;
-                        }
-                    });
-                    store.put(p);
-                    updatedStudentsCount++;
-                }
-            });
-
-            transaction.oncomplete = function () {
-                alert(`Successfully updated competency ratings for ${updatedStudentsCount} students in Section "${targetSection}".`);
-                renderSummaryTable();
-                if (currentProfileId) {
-                    loadSelectedProfile(currentProfileId);
-                }
-            };
-        };
+        await postToGoogleSheet({ action: "bulkUpdate", profiles: updatedProfiles });
+        alert(`Successfully updated ${updatedProfiles.length} students in Google Sheets.`);
+        await syncFromGoogleSheet();
+        if (currentProfileId) loadSelectedProfile(currentProfileId);
     }
 
-    // Bulk Update Section Outcome
-    function executeBulkOutcomeUpdate() {
+    async function executeBulkOutcomeUpdate() {
         const targetSection = document.getElementById("bulkTargetSection").value;
         const newOutcome = document.getElementById("bulkTargetOutcome").value;
 
         if (!targetSection) {
-            alert("Please select a target section to perform the bulk update.");
+            alert("Please select a target section first.");
             return;
         }
 
-        if (!confirm(`Are you sure you want to set the outcome to "${newOutcome}" for ALL students in Section "${targetSection}"?`)) {
-            return;
-        }
+        if (!confirm(`Set outcome to "${newOutcome}" for ALL students in Section "${targetSection}"?`)) return;
 
-        const transaction = db.transaction(["profiles"], "readwrite");
-        const store = transaction.objectStore("profiles");
-        const getRequest = store.getAll();
+        const updatedProfiles = [];
+        allProfilesCache.forEach(p => {
+            if (p.role === "Student" && p.section === targetSection) {
+                p.ncOutcome = newOutcome;
+                updatedProfiles.push(p);
+            }
+        });
 
-        getRequest.onsuccess = function () {
-            const profiles = getRequest.result;
-            let updatedCount = 0;
-
-            profiles.forEach(p => {
-                if (p.role === "Student" && p.section === targetSection) {
-                    p.ncOutcome = newOutcome;
-                    store.put(p);
-                    updatedCount++;
-                }
-            });
-
-            transaction.oncomplete = function () {
-                alert(`Successfully updated ${updatedCount} student records in Section "${targetSection}" to "${newOutcome}".`);
-                renderSummaryTable();
-                if (currentProfileId) {
-                    loadSelectedProfile(currentProfileId);
-                }
-            };
-        };
+        await postToGoogleSheet({ action: "bulkUpdate", profiles: updatedProfiles });
+        alert(`Successfully updated ${updatedProfiles.length} student outcomes in Google Sheets.`);
+        await syncFromGoogleSheet();
+        if (currentProfileId) loadSelectedProfile(currentProfileId);
     }
 
-    // CSV Batch Import Functionality
     function processCSVImport() {
         const fileInput = document.getElementById("csvFileInput");
         const file = fileInput.files[0];
-
         if (!file) {
             alert("Please select a CSV file first.");
             return;
         }
 
         const reader = new FileReader();
-        reader.onload = function (e) {
+        reader.onload = async function (e) {
             const text = e.target.result;
             const lines = text.split(/\r\n|\n/);
-            if (lines.length < 2) {
-                alert("CSV file appears to be empty or missing data rows.");
-                return;
-            }
+            if (lines.length < 2) return;
 
             const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
-            
             const lrnIdx = headers.findIndex(h => h.includes('lrn'));
             const nameIdx = headers.findIndex(h => h.includes('name'));
             const gradeIdx = headers.findIndex(h => h.includes('grade'));
@@ -1253,22 +1234,17 @@
             const qualIdx = headers.findIndex(h => h.includes('qual') || h.includes('course'));
 
             if (nameIdx === -1) {
-                alert("CSV header must contain a column for Student Full Name (e.g. 'Full Name', 'Name').");
+                alert("CSV must contain a 'Full Name' column.");
                 return;
             }
 
-            const transaction = db.transaction(["profiles"], "readwrite");
-            const store = transaction.objectStore("profiles");
-
             let importCount = 0;
-
             for (let i = 1; i < lines.length; i++) {
                 const line = lines[i].trim();
                 if (!line) continue;
 
                 const row = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || line.split(',');
                 const cleanRow = row.map(cell => cell.trim().replace(/^"|"$/g, ''));
-
                 const name = cleanRow[nameIdx] || "";
                 if (!name) continue;
 
@@ -1279,35 +1255,28 @@
 
                 if (!coreCompetenciesMap[qual]) {
                     const matchedKey = Object.keys(coreCompetenciesMap).find(k => k.toLowerCase().includes(qual.toLowerCase()));
-                    if (matchedKey) qual = matchedKey;
-                    else qual = "Cookery NC II";
+                    qual = matchedKey || "Cookery NC II";
                 }
-
-                const competencies = generateCompetenciesList(qual);
 
                 const studentProfile = {
                     role: "Student",
-                    name: name,
-                    lrn: lrn,
+                    name,
+                    lrn,
                     qualification: qual,
-                    gradeLevel: gradeLevel,
-                    section: section,
+                    gradeLevel,
+                    section,
                     ncOutcome: "Pending",
-                    competencies: competencies
+                    competencies: generateCompetenciesList(qual)
                 };
 
-                store.add(studentProfile);
+                await postToGoogleSheet({ action: "add", profile: studentProfile });
                 importCount++;
             }
 
-            transaction.oncomplete = function () {
-                alert(`Successfully imported ${importCount} student records from CSV!`);
-                fileInput.value = "";
-                loadProfileList();
-                renderSummaryTable();
-            };
+            alert(`Successfully uploaded ${importCount} records to Google Sheets!`);
+            fileInput.value = "";
+            await syncFromGoogleSheet();
         };
-
         reader.readAsText(file);
     }
 
@@ -1316,11 +1285,8 @@
         csvContent += `LRN,Full Name,Grade Level,Section,Qualification\n`;
         csvContent += `101234567891,"Juan Dela Cruz","Grade 11","TVL-A","Cookery NC II"\n`;
         csvContent += `101234567892,"Maria Santos","Grade 12","TVL-B","Technical Drafting NC II"\n`;
-        csvContent += `101234567893,"Pedro Reyes","Grade 11","Diamond","Visual Graphic Design NC II"\n`;
-
-        const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
+        link.setAttribute("href", encodeURI(csvContent));
         link.setAttribute("download", "sample_student_roster.csv");
         document.body.appendChild(link);
         link.click();
@@ -1330,95 +1296,81 @@
     function loadProfileList() {
         const filterRole = document.getElementById("filterRole").value;
         const evalSearch = document.getElementById("evalSearchInput").value.toLowerCase().trim();
+        const select = document.getElementById("profileSelect");
+        select.innerHTML = '<option value="">-- Select Profile --</option>';
 
-        const transaction = db.transaction(["profiles"], "readonly");
-        const store = transaction.objectStore("profiles");
-        const request = store.getAll();
+        allProfilesCache.forEach(p => {
+            const matchesRole = (filterRole === "All" || p.role === filterRole);
+            const matchesSearch = evalSearch === "" ||
+                p.name.toLowerCase().includes(evalSearch) ||
+                (p.lrn && p.lrn.toLowerCase().includes(evalSearch)) ||
+                p.qualification.toLowerCase().includes(evalSearch) ||
+                (p.section && p.section.toLowerCase().includes(evalSearch));
 
-        request.onsuccess = function () {
-            const profiles = request.result;
-            const select = document.getElementById("profileSelect");
-            select.innerHTML = '<option value="">-- Select Profile --</option>';
-
-            profiles.forEach(p => {
-                const matchesRole = (filterRole === "All" || p.role === filterRole);
-                
-                const matchesSearch = evalSearch === "" ||
-                    p.name.toLowerCase().includes(evalSearch) ||
-                    (p.lrn && p.lrn.toLowerCase().includes(evalSearch)) ||
-                    p.qualification.toLowerCase().includes(evalSearch) ||
-                    (p.section && p.section.toLowerCase().includes(evalSearch));
-
-                if (matchesRole && matchesSearch) {
-                    const opt = document.createElement("option");
-                    opt.value = p.id;
-                    const lrnInfo = (p.role === "Student" && p.lrn) ? ` [LRN: ${p.lrn}]` : '';
-                    const classInfo = (p.role === "Student" && p.gradeLevel) ? ` (${p.gradeLevel} - ${p.section})` : '';
-                    opt.innerText = `[${p.role}] ${p.name}${lrnInfo}${classInfo} - ${p.qualification}`;
-                    select.appendChild(opt);
-                }
-            });
-        };
+            if (matchesRole && matchesSearch) {
+                const opt = document.createElement("option");
+                opt.value = p.id;
+                const lrnInfo = (p.role === "Student" && p.lrn) ? ` [LRN: ${p.lrn}]` : '';
+                const classInfo = (p.role === "Student" && p.gradeLevel) ? ` (${p.gradeLevel} - ${p.section})` : '';
+                opt.innerText = `[${p.role}] ${p.name}${lrnInfo}${classInfo} - ${p.qualification}`;
+                select.appendChild(opt);
+            }
+        });
     }
 
     function loadSelectedProfile(targetId = null) {
-        const id = targetId || parseInt(document.getElementById("profileSelect").value);
+        const id = String(targetId || document.getElementById("profileSelect").value);
         if (!id) return;
+
+        const profile = allProfilesCache.find(p => String(p.id) === id);
+        if (!profile) return;
 
         document.getElementById("profileSelect").value = id;
         currentProfileId = id;
-        const transaction = db.transaction(["profiles"], "readonly");
-        const store = transaction.objectStore("profiles");
-        const request = store.get(id);
 
-        request.onsuccess = function () {
-            const profile = request.result;
-            document.getElementById("displayRole").innerText = profile.role;
-            document.getElementById("displayQual").innerText = profile.qualification;
-            document.getElementById("ncOutcomeSelect").value = profile.ncOutcome || "Pending";
+        document.getElementById("displayRole").innerText = profile.role;
+        document.getElementById("displayQual").innerText = profile.qualification;
+        document.getElementById("ncOutcomeSelect").value = profile.ncOutcome || "Pending";
 
-            const lrnContainer = document.getElementById("lrnDetailsContainer");
-            const classContainer = document.getElementById("classDetailsContainer");
+        const lrnContainer = document.getElementById("lrnDetailsContainer");
+        const classContainer = document.getElementById("classDetailsContainer");
 
-            if (profile.role === "Student") {
-                lrnContainer.style.display = "block";
-                document.getElementById("displayLrn").innerText = profile.lrn || "N/A";
+        if (profile.role === "Student") {
+            lrnContainer.style.display = "block";
+            document.getElementById("displayLrn").innerText = profile.lrn || "N/A";
+            classContainer.style.display = "block";
+            document.getElementById("displayClassDetails").innerText = `${profile.gradeLevel} - ${profile.section}`;
+        } else {
+            lrnContainer.style.display = "none";
+            classContainer.style.display = "none";
+        }
 
-                classContainer.style.display = "block";
-                document.getElementById("displayClassDetails").innerText = `${profile.gradeLevel} - ${profile.section}`;
-            } else {
-                lrnContainer.style.display = "none";
-                classContainer.style.display = "none";
+        const tbody = document.getElementById("competencyList");
+        tbody.innerHTML = "";
+        let currentCategory = "";
+
+        profile.competencies.forEach((comp) => {
+            if (comp.category !== currentCategory) {
+                currentCategory = comp.category;
+                const catTr = document.createElement("tr");
+                catTr.className = "category-header-row";
+                catTr.innerHTML = `<td colspan="2">${currentCategory}</td>`;
+                tbody.appendChild(catTr);
             }
 
-            const tbody = document.getElementById("competencyList");
-            tbody.innerHTML = "";
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${comp.title}</td>
+                <td class="radio-options">
+                    <label><input type="radio" name="${comp.id}" value="0" ${comp.score === 0 ? 'checked' : ''} onchange="calculateProgress()"> Not Competent (0)</label>
+                    <label><input type="radio" name="${comp.id}" value="1" ${comp.score === 1 ? 'checked' : ''} onchange="calculateProgress()"> Developing (1)</label>
+                    <label><input type="radio" name="${comp.id}" value="2" ${comp.score === 2 ? 'checked' : ''} onchange="calculateProgress()"> Competent (2)</label>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
 
-            let currentCategory = "";
-
-            profile.competencies.forEach((comp) => {
-                if (comp.category !== currentCategory) {
-                    currentCategory = comp.category;
-                    const catTr = document.createElement("tr");
-                    catTr.className = "category-header-row";
-                    catTr.innerHTML = `<td colspan="2">${currentCategory}</td>`;
-                    tbody.appendChild(catTr);
-                }
-
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td>${comp.title}</td>
-                    <td class="radio-options">
-                        <label><input type="radio" name="${comp.id}" value="0" ${comp.score === 0 ? 'checked' : ''} onchange="calculateProgress()"> Not Competent (0)</label>
-                        <label><input type="radio" name="${comp.id}" value="1" ${comp.score === 1 ? 'checked' : ''} onchange="calculateProgress()"> Developing (1)</label>
-                        <label><input type="radio" name="${comp.id}" value="2" ${comp.score === 2 ? 'checked' : ''} onchange="calculateProgress()"> Competent (2)</label>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            calculateProgress();
-        };
+        calculateProgress();
     }
 
     function calculateProgress() {
@@ -1426,18 +1378,14 @@
         const rows = tbody.querySelectorAll("tr:not(.category-header-row)");
         let totalScore = 0;
         let maxScore = rows.length * 2;
-
         if (rows.length === 0 || maxScore === 0) return 0;
 
         rows.forEach(tr => {
             const checkedRadio = tr.querySelector("input[type='radio']:checked");
-            if (checkedRadio) {
-                totalScore += parseInt(checkedRadio.value);
-            }
+            if (checkedRadio) totalScore += parseInt(checkedRadio.value);
         });
 
         const percentage = Math.round((totalScore / maxScore) * 100);
-
         const progressBar = document.getElementById("progressBar");
         progressBar.style.width = percentage + "%";
         progressBar.innerText = percentage + "%";
@@ -1453,126 +1401,90 @@
             badge.innerText = "Requires Intensive Training";
             badge.className = "status-badge status-not-ready";
         }
-
         return percentage;
     }
 
-    function saveRatings() {
+    async function saveRatings() {
         if (!currentProfileId) {
             alert("Please select a profile first.");
             return;
         }
 
-        const transaction = db.transaction(["profiles"], "readwrite");
-        const store = transaction.objectStore("profiles");
-        const getRequest = store.get(currentProfileId);
+        const profile = allProfilesCache.find(p => String(p.id) === String(currentProfileId));
+        if (!profile) return;
 
-        getRequest.onsuccess = function () {
-            const profile = getRequest.result;
+        profile.ncOutcome = document.getElementById("ncOutcomeSelect").value;
+        profile.competencies.forEach(comp => {
+            const selected = document.querySelector(`input[name="${comp.id}"]:checked`);
+            if (selected) comp.score = parseInt(selected.value);
+        });
 
-            profile.ncOutcome = document.getElementById("ncOutcomeSelect").value;
-
-            profile.competencies.forEach(comp => {
-                const selected = document.querySelector(`input[name="${comp.id}"]:checked`);
-                if (selected) {
-                    comp.score = parseInt(selected.value);
-                }
-            });
-
-            store.put(profile);
-            alert("Assessment records saved successfully!");
-            renderSummaryTable();
-        };
+        await postToGoogleSheet({ action: "update", profile: profile });
+        alert("Assessment records saved to Google Sheets!");
+        await syncFromGoogleSheet();
     }
 
     function printIndividualCertificate() {
         if (!currentProfileId) {
-            alert("Please select a profile first to print an individual report.");
+            alert("Please select a profile first.");
             return;
         }
 
-        const transaction = db.transaction(["profiles"], "readonly");
-        const store = transaction.objectStore("profiles");
-        const request = store.get(currentProfileId);
+        const profile = allProfilesCache.find(p => String(p.id) === String(currentProfileId));
+        if (!profile) return;
 
-        request.onsuccess = function () {
-            const profile = request.result;
+        document.getElementById("certName").innerText = profile.name;
+        document.getElementById("certRole").innerText = profile.role;
+        document.getElementById("certQual").innerText = profile.qualification;
+        document.getElementById("certDate").innerText = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
-            document.getElementById("certName").innerText = profile.name;
-            document.getElementById("certRole").innerText = profile.role;
-            document.getElementById("certQual").innerText = profile.qualification;
-            document.getElementById("certDate").innerText = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        if (profile.role === "Student") {
+            document.getElementById("certLrnRow").style.display = "block";
+            document.getElementById("certLrn").innerText = profile.lrn || "N/A";
+            document.getElementById("certClassRow").style.display = "block";
+            document.getElementById("certClass").innerText = `${profile.gradeLevel} - ${profile.section}`;
+        } else {
+            document.getElementById("certLrnRow").style.display = "none";
+            document.getElementById("certClassRow").style.display = "none";
+        }
 
-            if (profile.role === "Student") {
-                document.getElementById("certLrnRow").style.display = "block";
-                document.getElementById("certLrn").innerText = profile.lrn || "N/A";
+        const certBody = document.getElementById("certCompetencyBody");
+        certBody.innerHTML = "";
+        let totalScore = 0, maxScore = profile.competencies.length * 2, currentCat = "";
 
-                document.getElementById("certClassRow").style.display = "block";
-                document.getElementById("certClass").innerText = `${profile.gradeLevel} - ${profile.section}`;
-            } else {
-                document.getElementById("certLrnRow").style.display = "none";
-                document.getElementById("certClassRow").style.display = "none";
+        profile.competencies.forEach(c => {
+            totalScore += (c.score || 0);
+            if (c.category !== currentCat) {
+                currentCat = c.category;
+                const catRow = document.createElement("tr");
+                catRow.innerHTML = `<td colspan="2" style="background:#e8f5e9; font-weight:bold;">${currentCat}</td>`;
+                certBody.appendChild(catRow);
             }
+            let ratingText = c.score === 2 ? "Competent (2)" : (c.score === 1 ? "Developing (1)" : "Not Competent (0)");
+            const row = document.createElement("tr");
+            row.innerHTML = `<td>${c.title}</td><td style="text-align: center;">${ratingText}</td>`;
+            certBody.appendChild(row);
+        });
 
-            const certBody = document.getElementById("certCompetencyBody");
-            certBody.innerHTML = "";
+        let pct = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
+        document.getElementById("certScorePct").innerText = pct + "%";
+        document.getElementById("certReadinessLevel").innerText = pct >= 85 ? "Ready for TESDA Assessment" : (pct >= 50 ? "Needs Further Refinement" : "Requires Intensive Training");
+        document.getElementById("certFinalOutcome").innerText = (profile.ncOutcome || "Pending").toUpperCase();
 
-            let totalScore = 0;
-            let maxScore = profile.competencies.length * 2;
-            let currentCat = "";
-
-            profile.competencies.forEach(c => {
-                totalScore += (c.score || 0);
-
-                if (c.category !== currentCat) {
-                    currentCat = c.category;
-                    const catRow = document.createElement("tr");
-                    catRow.innerHTML = `<td colspan="2" style="background:#e8f5e9; font-weight:bold;">${currentCat}</td>`;
-                    certBody.appendChild(catRow);
-                }
-
-                let ratingText = "Not Competent (0)";
-                if (c.score === 1) ratingText = "Developing (1)";
-                if (c.score === 2) ratingText = "Competent (2)";
-
-                const row = document.createElement("tr");
-                row.innerHTML = `
-                    <td>${c.title}</td>
-                    <td style="text-align: center;">${ratingText}</td>
-                `;
-                certBody.appendChild(row);
-            });
-
-            let pct = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
-            document.getElementById("certScorePct").innerText = pct + "%";
-
-            let readinessLevel = "Requires Intensive Training";
-            if (pct >= 85) readinessLevel = "Ready for TESDA Assessment";
-            else if (pct >= 50) readinessLevel = "Needs Further Refinement";
-
-            document.getElementById("certReadinessLevel").innerText = readinessLevel;
-            document.getElementById("certFinalOutcome").innerText = (profile.ncOutcome || "Pending").toUpperCase();
-
-            document.body.classList.add("print-individual");
-            window.print();
-            document.body.classList.remove("print-individual");
-        };
+        document.body.classList.add("print-individual");
+        window.print();
+        document.body.classList.remove("print-individual");
     }
 
     function updateSectionFilterDropdown(profiles) {
         const select = document.getElementById("chartSectionFilter");
         const bulkSelect = document.getElementById("bulkTargetSection");
         const batchRatingSelect = document.getElementById("batchRatingSection");
-        
-        const currentVal = select.value;
-        const currentBulkVal = bulkSelect.value;
-        const currentBatchRatingVal = batchRatingSelect.value;
+        const currentVal = select.value, currentBulkVal = bulkSelect.value, currentBatchRatingVal = batchRatingSelect.value;
 
         const sections = new Set();
         profiles.forEach(p => {
-            if (p.role === "Student" && p.section) {
-                sections.add(p.section);
-            }
+            if (p.role === "Student" && p.section) sections.add(p.section);
         });
 
         select.innerHTML = '<option value="All">All Sections (Entire Roster)</option>';
@@ -1580,20 +1492,12 @@
         batchRatingSelect.innerHTML = '<option value="">-- Select Section --</option>';
 
         sections.forEach(sec => {
-            const opt = document.createElement("option");
-            opt.value = sec;
-            opt.innerText = `Section: ${sec}`;
-            select.appendChild(opt);
-
-            const optBulk = document.createElement("option");
-            optBulk.value = sec;
-            optBulk.innerText = `Section: ${sec}`;
-            bulkSelect.appendChild(optBulk);
-
-            const optBatchRating = document.createElement("option");
-            optBatchRating.value = sec;
-            optBatchRating.innerText = `Section: ${sec}`;
-            batchRatingSelect.appendChild(optBatchRating);
+            [select, bulkSelect, batchRatingSelect].forEach(el => {
+                const opt = document.createElement("option");
+                opt.value = sec;
+                opt.innerText = `Section: ${sec}`;
+                el.appendChild(opt);
+            });
         });
 
         if (sections.has(currentVal)) select.value = currentVal;
@@ -1601,357 +1505,197 @@
         if (sections.has(currentBatchRatingVal)) batchRatingSelect.value = currentBatchRatingVal;
     }
 
-    // Export Section Analytics to CSV
     function exportSectionAnalyticsCSV() {
         const selectedSection = document.getElementById("chartSectionFilter").value;
+        const filteredProfiles = allProfilesCache.filter(p => selectedSection === "All" || (p.role === "Student" && p.section === selectedSection));
+        const qualStats = {};
+        const qualifications = Object.keys(coreCompetenciesMap);
 
-        const transaction = db.transaction(["profiles"], "readonly");
-        const store = transaction.objectStore("profiles");
-        const request = store.getAll();
-
-        request.onsuccess = function () {
-            const profiles = request.result;
-
-            const filteredProfiles = profiles.filter(p => {
-                if (selectedSection === "All") return true;
-                return p.role === "Student" && p.section === selectedSection;
-            });
-
-            const qualStats = {};
-            const qualifications = [
-                "Cookery NC II", "Technical Drafting NC II", "Food Processing NC II", 
-                "Visual Graphic Design NC II", "Animation NC II", 
-                "Food & Beverage Services NC II", "Bread & Pastry Production NC II"
-            ];
-
-            qualifications.forEach(q => {
-                qualStats[q] = { total: 0, passed: 0, completion: 0, failed: 0, pending: 0 };
-            });
-
-            filteredProfiles.forEach(p => {
-                const q = p.qualification;
-                if (qualStats[q]) {
-                    qualStats[q].total++;
-                    const outcome = p.ncOutcome || "Pending";
-                    if (outcome === "Passed") qualStats[q].passed++;
-                    else if (outcome === "For Completion") qualStats[q].completion++;
-                    else if (outcome === "Failed") qualStats[q].failed++;
-                    else qualStats[q].pending++;
-                }
-            });
-
-            let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += `Section Analytics Report: ${selectedSection}\n`;
-            csvContent += `Qualification,Total Candidates,Passed,For Completion,Failed,Pending,Pass Rate (%)\n`;
-
-            qualifications.forEach(q => {
-                const s = qualStats[q];
-                const rate = s.total > 0 ? Math.round((s.passed / s.total) * 100) : 0;
-                csvContent += `"${q}",${s.total},${s.passed},${s.completion},${s.failed},${s.pending},${rate}%\n`;
-            });
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Analytics_Summary_${selectedSection.replace(/\s+/g, '_')}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-        };
-    }
-
-    // Export Directory Table to CSV / Excel Format
-    function exportDirectoryCSV() {
-        const transaction = db.transaction(["profiles"], "readonly");
-        const store = transaction.objectStore("profiles");
-        const request = store.getAll();
-
-        request.onsuccess = function () {
-            const profiles = request.result;
-
-            let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += `Role,LRN,Full Name,Grade Level,Section,Qualification,Readiness %,TESDA Assessment Outcome\n`;
-
-            profiles.forEach(p => {
-                let scoreSum = 0;
-                let max = p.competencies.length * 2;
-                p.competencies.forEach(c => scoreSum += (c.score || 0));
-                let pct = max > 0 ? Math.round((scoreSum / max) * 100) : 0;
-
-                const lrn = p.role === "Student" ? (p.lrn || "N/A") : "N/A";
-                const grade = p.role === "Student" ? (p.gradeLevel || "N/A") : "N/A";
-                const section = p.role === "Student" ? (p.section || "N/A") : "N/A";
+        qualifications.forEach(q => qualStats[q] = { total: 0, passed: 0, completion: 0, failed: 0, pending: 0 });
+        filteredProfiles.forEach(p => {
+            const q = p.qualification;
+            if (qualStats[q]) {
+                qualStats[q].total++;
                 const outcome = p.ncOutcome || "Pending";
-
-                csvContent += `"${p.role}","${lrn}","${p.name}","${grade}","${section}","${p.qualification}",${pct}%,"${outcome}"\n`;
-            });
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `SDO_Meycauayan_TVL_Master_Directory_${new Date().toISOString().slice(0,10)}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-        };
-    }
-
-    // Render Charts filtered by Section
-    function updateCharts(profiles) {
-        const selectedSection = document.getElementById("chartSectionFilter").value;
-
-        const filteredProfiles = profiles.filter(p => {
-            if (selectedSection === "All") return true;
-            return p.role === "Student" && p.section === selectedSection;
+                if (outcome === "Passed") qualStats[q].passed++;
+                else if (outcome === "For Completion") qualStats[q].completion++;
+                else if (outcome === "Failed") qualStats[q].failed++;
+                else qualStats[q].pending++;
+            }
         });
 
-        const qualCounts = {
-            "Cookery NC II": { total: 0, passed: 0 },
-            "Technical Drafting NC II": { total: 0, passed: 0 },
-            "Food Processing NC II": { total: 0, passed: 0 },
-            "Visual Graphic Design NC II": { total: 0, passed: 0 },
-            "Animation NC II": { total: 0, passed: 0 },
-            "Food & Beverage Services NC II": { total: 0, passed: 0 },
-            "Bread & Pastry Production NC II": { total: 0, passed: 0 }
-        };
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += `Section Analytics Report: ${selectedSection}\nQualification,Total Candidates,Passed,For Completion,Failed,Pending,Pass Rate (%)\n`;
+        qualifications.forEach(q => {
+            const s = qualStats[q];
+            const rate = s.total > 0 ? Math.round((s.passed / s.total) * 100) : 0;
+            csvContent += `"${q}",${s.total},${s.passed},${s.completion},${s.failed},${s.pending},${rate}%\n`;
+        });
 
-        const outcomeCounts = {
-            "Passed": 0,
-            "For Completion": 0,
-            "Failed": 0,
-            "Pending": 0
-        };
+        const link = document.createElement("a");
+        link.setAttribute("href", encodeURI(csvContent));
+        link.setAttribute("download", `Analytics_Summary_${selectedSection.replace(/\s+/g, '_')}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    }
+
+    function exportDirectoryCSV() {
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += `Role,LRN,Full Name,Grade Level,Section,Qualification,Readiness %,TESDA Assessment Outcome\n`;
+        allProfilesCache.forEach(p => {
+            let scoreSum = 0, max = p.competencies.length * 2;
+            p.competencies.forEach(c => scoreSum += (c.score || 0));
+            let pct = max > 0 ? Math.round((scoreSum / max) * 100) : 0;
+            csvContent += `"${p.role}","${p.lrn || 'N/A'}","${p.name}","${p.gradeLevel || 'N/A'}","${p.section || 'N/A'}","${p.qualification}",${pct}%,"${p.ncOutcome || 'Pending'}"\n`;
+        });
+
+        const link = document.createElement("a");
+        link.setAttribute("href", encodeURI(csvContent));
+        link.setAttribute("download", `SDO_Meycauayan_TVL_Master_Directory_${new Date().toISOString().slice(0,10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    }
+
+    function updateCharts(profiles) {
+        const selectedSection = document.getElementById("chartSectionFilter").value;
+        const filteredProfiles = profiles.filter(p => selectedSection === "All" || (p.role === "Student" && p.section === selectedSection));
+
+        const qualCounts = {};
+        Object.keys(coreCompetenciesMap).forEach(q => qualCounts[q] = { total: 0, passed: 0 });
+        const outcomeCounts = { "Passed": 0, "For Completion": 0, "Failed": 0, "Pending": 0 };
 
         filteredProfiles.forEach(p => {
-            const qual = p.qualification;
-            if (qualCounts[qual]) {
-                qualCounts[qual].total++;
-                if (p.ncOutcome === "Passed") {
-                    qualCounts[qual].passed++;
-                }
+            if (qualCounts[p.qualification]) {
+                qualCounts[p.qualification].total++;
+                if (p.ncOutcome === "Passed") qualCounts[p.qualification].passed++;
             }
-
             const outcome = p.ncOutcome || "Pending";
-            if (outcomeCounts[outcome] !== undefined) {
-                outcomeCounts[outcome]++;
-            } else {
-                outcomeCounts["Pending"]++;
-            }
+            outcomeCounts[outcome] !== undefined ? outcomeCounts[outcome]++ : outcomeCounts["Pending"]++;
         });
 
         const qualLabels = Object.keys(qualCounts).map(q => q.replace(" NC II", ""));
-        const qualRates = Object.keys(qualCounts).map(q => {
-            const item = qualCounts[q];
-            return item.total > 0 ? Math.round((item.passed / item.total) * 100) : 0;
-        });
+        const qualRates = Object.keys(qualCounts).map(q => qualCounts[q].total > 0 ? Math.round((qualCounts[q].passed / qualCounts[q].total) * 100) : 0);
 
-        // 1. Bar Chart: Pass Rates by Qualification
         const ctxQual = document.getElementById("qualPassChart").getContext("2d");
         if (qualPassChartInstance) qualPassChartInstance.destroy();
-
         qualPassChartInstance = new Chart(ctxQual, {
             type: "bar",
             data: {
                 labels: qualLabels,
-                datasets: [{
-                    label: "Pass Rate (%)",
-                    data: qualRates,
-                    backgroundColor: "#2d6a4f",
-                    borderColor: "#1b4332",
-                    borderWidth: 1
-                }]
+                datasets: [{ label: "Pass Rate (%)", data: qualRates, backgroundColor: "#2d6a4f", borderColor: "#1b4332", borderWidth: 1 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100,
-                        ticks: { callback: value => value + "%" }
-                    }
-                },
-                plugins: {
-                    legend: { display: false }
-                }
-            }
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100, ticks: { callback: v => v + "%" } } }, plugins: { legend: { display: false } } }
         });
 
-        // 2. Doughnut Chart: Outcome Distribution
         const ctxOutcome = document.getElementById("outcomeChart").getContext("2d");
         if (outcomeChartInstance) outcomeChartInstance.destroy();
-
         outcomeChartInstance = new Chart(ctxOutcome, {
             type: "doughnut",
             data: {
                 labels: ["Passed", "For Completion", "Failed", "Pending"],
-                datasets: [{
-                    data: [
-                        outcomeCounts["Passed"],
-                        outcomeCounts["For Completion"],
-                        outcomeCounts["Failed"],
-                        outcomeCounts["Pending"]
-                    ],
-                    backgroundColor: ["#2e7d32", "#ed6c02", "#d32f2f", "#6c757d"]
-                }]
+                datasets: [{ data: [outcomeCounts["Passed"], outcomeCounts["For Completion"], outcomeCounts["Failed"], outcomeCounts["Pending"]], backgroundColor: ["#2e7d32", "#ed6c02", "#d32f2f", "#6c757d"] }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: "bottom" }
-                }
-            }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom" } } }
         });
     }
 
     function renderSummaryTable() {
-        const transaction = db.transaction(["profiles"], "readonly");
-        const store = transaction.objectStore("profiles");
-        const request = store.getAll();
+        const profiles = allProfilesCache;
+        updateSectionFilterDropdown(profiles);
+        updateCharts(profiles);
 
-        request.onsuccess = function () {
-            const profiles = request.result;
+        const searchQuery = document.getElementById("summarySearchInput").value.toLowerCase().trim();
+        const filterRole = document.getElementById("summaryFilterRole").value;
+        const filterQual = document.getElementById("summaryFilterQual").value;
+        const filterOutcome = document.getElementById("summaryFilterOutcome").value;
 
-            updateSectionFilterDropdown(profiles);
-            updateCharts(profiles);
+        const tbody = document.getElementById("summaryTableBody");
+        tbody.innerHTML = "";
+        let countTeachers = 0, countStudents = 0, countPassed = 0;
 
-            const searchQuery = document.getElementById("summarySearchInput").value.toLowerCase().trim();
-            const filterRole = document.getElementById("summaryFilterRole").value;
-            const filterQual = document.getElementById("summaryFilterQual").value;
-            const filterOutcome = document.getElementById("summaryFilterOutcome").value;
+        profiles.forEach(p => {
+            if (p.role === "Teacher") countTeachers++;
+            if (p.role === "Student") countStudents++;
+            if (p.ncOutcome === "Passed") countPassed++;
 
-            const tbody = document.getElementById("summaryTableBody");
-            tbody.innerHTML = "";
+            let scoreSum = 0, max = p.competencies.length * 2;
+            p.competencies.forEach(c => scoreSum += (c.score || 0));
+            let pct = max > 0 ? Math.round((scoreSum / max) * 100) : 0;
 
-            let countTeachers = 0;
-            let countStudents = 0;
-            let countPassed = 0;
+            const matchesRole = (filterRole === "All" || p.role === filterRole);
+            const matchesQual = (filterQual === "All" || p.qualification === filterQual);
+            const matchesOutcome = (filterOutcome === "All" || (p.ncOutcome || "Pending") === filterOutcome);
+            const matchesSearch = searchQuery === "" ||
+                p.name.toLowerCase().includes(searchQuery) ||
+                (p.lrn && p.lrn.toLowerCase().includes(searchQuery)) ||
+                p.role.toLowerCase().includes(searchQuery) ||
+                p.qualification.toLowerCase().includes(searchQuery) ||
+                (p.section && p.section.toLowerCase().includes(searchQuery)) ||
+                (p.gradeLevel && p.gradeLevel.toLowerCase().includes(searchQuery));
 
-            profiles.forEach(p => {
-                if (p.role === "Teacher") countTeachers++;
-                if (p.role === "Student") countStudents++;
-                if (p.ncOutcome === "Passed") countPassed++;
-
-                let scoreSum = 0;
-                let max = p.competencies.length * 2;
-                p.competencies.forEach(c => scoreSum += (c.score || 0));
-                let pct = max > 0 ? Math.round((scoreSum / max) * 100) : 0;
-
-                const matchesRole = (filterRole === "All" || p.role === filterRole);
-                const matchesQual = (filterQual === "All" || p.qualification === filterQual);
-                const matchesOutcome = (filterOutcome === "All" || (p.ncOutcome || "Pending") === filterOutcome);
-                
-                const matchesSearch = searchQuery === "" || 
-                    p.name.toLowerCase().includes(searchQuery) ||
-                    (p.lrn && p.lrn.toLowerCase().includes(searchQuery)) ||
-                    p.role.toLowerCase().includes(searchQuery) ||
-                    p.qualification.toLowerCase().includes(searchQuery) ||
-                    (p.section && p.section.toLowerCase().includes(searchQuery)) ||
-                    (p.gradeLevel && p.gradeLevel.toLowerCase().includes(searchQuery));
-
-                if (matchesRole && matchesQual && matchesOutcome && matchesSearch) {
-                    let outcomeClass = "outcome-pending";
-                    let outcomeText = p.ncOutcome || "Pending";
-
-                    if (p.ncOutcome === "Passed") {
-                        outcomeClass = "outcome-passed";
-                        outcomeText = "Passed";
-                    } else if (p.ncOutcome === "For Completion") {
-                        outcomeClass = "outcome-completion";
-                        outcomeText = "For Completion";
-                    } else if (p.ncOutcome === "Failed") {
-                        outcomeClass = "outcome-failed";
-                        outcomeText = "Failed";
-                    }
-
-                    const lrnDisplay = (p.role === "Student" && p.lrn) ? p.lrn : "N/A";
-                    const gradeDisplay = (p.role === "Student" && p.gradeLevel) ? p.gradeLevel : "N/A";
-                    const sectionDisplay = (p.role === "Student" && p.section) ? p.section : "N/A";
-
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td><strong>${p.role}</strong></td>
-                        <td>${lrnDisplay}</td>
-                        <td>${p.name}</td>
-                        <td>${gradeDisplay}</td>
-                        <td>${sectionDisplay}</td>
-                        <td>${p.qualification}</td>
-                        <td><strong>${pct}%</strong></td>
-                        <td><span class="outcome-badge ${outcomeClass}">${outcomeText}</span></td>
-                        <td class="action-col" style="text-align: center;">
-                            <button class="btn btn-sm" onclick="loadSelectedProfile(${p.id})">Evaluate</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteProfile(${p.id}, '${p.name.replace(/'/g, "\\'")}')">Delete</button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                }
-            });
-
-            if (tbody.children.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;">No matching profiles found in database.</td></tr>`;
+            if (matchesRole && matchesQual && matchesOutcome && matchesSearch) {
+                let outcomeClass = p.ncOutcome === "Passed" ? "outcome-passed" : (p.ncOutcome === "For Completion" ? "outcome-completion" : (p.ncOutcome === "Failed" ? "outcome-failed" : "outcome-pending"));
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td><strong>${p.role}</strong></td>
+                    <td>${p.role === "Student" && p.lrn ? p.lrn : "N/A"}</td>
+                    <td>${p.name}</td>
+                    <td>${p.role === "Student" && p.gradeLevel ? p.gradeLevel : "N/A"}</td>
+                    <td>${p.role === "Student" && p.section ? p.section : "N/A"}</td>
+                    <td>${p.qualification}</td>
+                    <td><strong>${pct}%</strong></td>
+                    <td><span class="outcome-badge ${outcomeClass}">${p.ncOutcome || "Pending"}</span></td>
+                    <td class="action-col" style="text-align: center;">
+                        <button class="btn btn-sm" onclick="loadSelectedProfile('${p.id}')">Evaluate</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteProfile('${p.id}', '${p.name.replace(/'/g, "\\'")}')">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
             }
+        });
 
-            document.getElementById("statTotal").innerText = profiles.length;
-            document.getElementById("statTeachers").innerText = countTeachers;
-            document.getElementById("statStudents").innerText = countStudents;
-            document.getElementById("statReady").innerText = countPassed;
-        };
+        if (tbody.children.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;">No matching profiles found in Google Sheets.</td></tr>`;
+        }
+
+        document.getElementById("statTotal").innerText = profiles.length;
+        document.getElementById("statTeachers").innerText = countTeachers;
+        document.getElementById("statStudents").innerText = countStudents;
+        document.getElementById("statReady").innerText = countPassed;
     }
 
-    function deleteProfile(id, name) {
-        if (confirm(`Are you sure you want to delete the record for "${name}"? This action cannot be undone.`)) {
-            const transaction = db.transaction(["profiles"], "readwrite");
-            const store = transaction.objectStore("profiles");
-            store.delete(id);
-
-            transaction.oncomplete = function () {
-                alert(`Profile for "${name}" has been deleted.`);
-                
-                if (currentProfileId === id) {
-                    currentProfileId = null;
-                    document.getElementById("displayRole").innerText = "-";
-                    document.getElementById("displayQual").innerText = "-";
-                    document.getElementById("lrnDetailsContainer").style.display = "none";
-                    document.getElementById("classDetailsContainer").style.display = "none";
-                    document.getElementById("progressBar").style.width = "0%";
-                    document.getElementById("progressBar").innerText = "0%";
-                    document.getElementById("competencyList").innerHTML = '<tr><td colspan="2">Please select a profile above to evaluate basic, common, and core competencies.</td></tr>';
-                }
-
-                loadProfileList();
-                renderSummaryTable();
-            };
+    async function deleteProfile(id, name) {
+        if (confirm(`Delete record for "${name}" from Google Sheets?`)) {
+            await postToGoogleSheet({ action: "delete", id: id });
+            alert(`Profile for "${name}" deleted.`);
+            if (String(currentProfileId) === String(id)) {
+                currentProfileId = null;
+                document.getElementById("displayRole").innerText = "-";
+                document.getElementById("displayQual").innerText = "-";
+                document.getElementById("competencyList").innerHTML = '<tr><td colspan="2">Please select a profile above.</td></tr>';
+            }
+            await syncFromGoogleSheet();
         }
     }
 
-    function clearAllData() {
-        if (confirm("WARNING: Are you sure you want to delete ALL teacher and student records? This process cannot be undone.")) {
-            const transaction = db.transaction(["profiles"], "readwrite");
-            const store = transaction.objectStore("profiles");
-            store.clear();
-
-            transaction.oncomplete = function () {
-                alert("All records have been cleared.");
-                location.reload();
-            };
+    async function clearAllData() {
+        if (confirm("WARNING: Delete ALL records from Google Sheets? This cannot be undone.")) {
+            await postToGoogleSheet({ action: "clearAll" });
+            alert("All records cleared from Google Sheets.");
+            await syncFromGoogleSheet();
         }
     }
 
     function exportData() {
-        const transaction = db.transaction(["profiles"], "readonly");
-        const store = transaction.objectStore("profiles");
-        const request = store.getAll();
-
-        request.onsuccess = function () {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(request.result, null, 2));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", "sdo_meycauayan_nc2_monitoring_backup.json");
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
-        };
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allProfilesCache, null, 2));
+        const link = document.createElement('a');
+        link.setAttribute("href", dataStr);
+        link.setAttribute("download", "sdo_meycauayan_nc2_monitoring_backup.json");
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
     }
 </script>
 
