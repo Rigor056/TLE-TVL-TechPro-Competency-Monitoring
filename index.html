@@ -94,94 +94,6 @@
             color: #d1e7dd;
         }
 
-        /* Interactive Navigation & Cloud Sync Bar */
-        .top-nav-bar {
-            background: #ffffff;
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            border-bottom: 2px solid #e9ecef;
-        }
-
-        .nav-tabs {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .nav-tab-btn {
-            background: #f2f7f4;
-            color: var(--primary-color);
-            border: 1px solid #d1e7dd;
-            padding: 8px 14px;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .nav-tab-btn:hover {
-            background: #d1e7dd;
-        }
-
-        .nav-tab-btn.active {
-            background: var(--primary-color);
-            color: #ffffff;
-            border-color: var(--primary-color);
-        }
-
-        .db-status-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            background: #e8f5e9;
-            color: #1b4332;
-            border: 1px solid #b7e4c7;
-            cursor: pointer;
-        }
-
-        .db-status-dot {
-            width: 9px;
-            height: 9px;
-            border-radius: 50%;
-            background: #2e7d32;
-            display: inline-block;
-        }
-
-        .db-status-dot.local {
-            background: #e67e22;
-        }
-
-        .db-status-dot.syncing {
-            background: #0d6efd;
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.3; }
-            100% { opacity: 1; }
-        }
-
-        .tab-section {
-            display: block;
-        }
-
-        .tab-section.hidden-tab {
-            display: none;
-        }
-
         .card {
             background-color: var(--card-bg);
             padding: 20px;
@@ -304,6 +216,12 @@
             gap: 15px;
         }
 
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
         .progress-bar-bg {
             background-color: #e9ecef;
             border-radius: 20px;
@@ -339,6 +257,7 @@
         .status-developing { background-color: var(--warning-color); }
         .status-not-ready { background-color: var(--danger-color); }
 
+        /* NC Outcome Specific Badges */
         .outcome-badge {
             display: inline-block;
             padding: 4px 10px;
@@ -431,77 +350,6 @@
             border-radius: 6px;
             padding: 20px;
             text-align: center;
-        }
-
-        /* Toast Notification */
-        #toastContainer {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .toast {
-            background: var(--primary-color);
-            color: white;
-            padding: 12px 18px;
-            border-radius: 6px;
-            border-left: 5px solid var(--accent-gold);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            font-size: 14px;
-            font-weight: 500;
-            opacity: 0;
-            transform: translateY(15px);
-            transition: all 0.3s ease;
-            max-width: 360px;
-        }
-
-        .toast.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .toast.error {
-            background: var(--danger-color);
-        }
-
-        /* Cloud Setup Modal */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
-            z-index: 10000;
-            align-items: center;
-            justify-content: center;
-            padding: 15px;
-        }
-
-        .modal-box {
-            background: white;
-            border-radius: 8px;
-            max-width: 650px;
-            width: 100%;
-            padding: 25px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
-            border-top: 5px solid var(--primary-color);
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .code-snippet {
-            background: #1e293b;
-            color: #e2e8f0;
-            padding: 12px;
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: 12px;
-            overflow-x: auto;
-            white-space: pre;
-            margin: 10px 0;
         }
 
         /* Printable Individual Certificate Template */
@@ -597,22 +445,16 @@
                 margin: 10mm;
             }
 
-            body:not(.print-individual) .non-printable,
-            body:not(.print-individual) .top-nav-bar,
-            body:not(.print-individual) #toastContainer,
-            body:not(.print-individual) .modal-overlay,
-            body:not(.print-individual) .card:not([data-tab="directory"]),
-            body:not(.print-individual) .btn,
+            body:not(.print-individual) .non-printable, 
+            body:not(.print-individual) .card:nth-of-type(1), 
+            body:not(.print-individual) .card:nth-of-type(3), 
+            body:not(.print-individual) .card:nth-of-type(4), 
+            body:not(.print-individual) .card:nth-of-type(5), 
+            body:not(.print-individual) .card:nth-of-type(6), 
+            body:not(.print-individual) .card:nth-of-type(7), 
+            body:not(.print-individual) .btn, 
             body:not(.print-individual) .action-col {
                 display: none !important;
-            }
-
-            body:not(.print-individual) .card[data-tab="directory"] {
-                display: block !important;
-                box-shadow: none !important;
-                border: none !important;
-                padding: 0 !important;
-                background: transparent !important;
             }
 
             body:not(.print-individual) header {
@@ -626,6 +468,13 @@
             body:not(.print-individual) header h1 { color: #000 !important; font-size: 18px !important; }
             body:not(.print-individual) header h2 { color: #333 !important; font-size: 11px !important; }
             body:not(.print-individual) header p { color: #444 !important; font-size: 11px !important; }
+
+            body:not(.print-individual) .card {
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+                background: transparent !important;
+            }
 
             body:not(.print-individual) table {
                 width: 100% !important;
@@ -677,26 +526,8 @@
         </div>
     </header>
 
-    <!-- Interactive Navigation & Online Cloud Database Bar -->
-    <div class="top-nav-bar non-printable">
-        <div class="nav-tabs">
-            <button type="button" class="nav-tab-btn active" onclick="switchTab('all', this)">All Views</button>
-            <button type="button" class="nav-tab-btn" onclick="switchTab('analytics', this)">Analytics & Charts</button>
-            <button type="button" class="nav-tab-btn" onclick="switchTab('register', this)">Register & Batch Tools</button>
-            <button type="button" class="nav-tab-btn" onclick="switchTab('evaluate', this)">Competency Checklist</button>
-            <button type="button" class="nav-tab-btn" onclick="switchTab('directory', this)">Master Directory</button>
-        </div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-            <div class="db-status-pill" onclick="openDbModal()" title="Click to configure Free Online Cloud Database (Supabase)">
-                <span id="dbStatusDot" class="db-status-dot local"></span>
-                <span id="dbStatusText">Local Browser DB (Click to Connect Cloud)</span>
-            </div>
-            <button type="button" class="btn btn-sm btn-info" onclick="syncFromCloud(true)">Sync</button>
-        </div>
-    </div>
-
     <!-- Metric Dashboard Summary Cards -->
-    <div class="metrics-grid non-printable">
+    <div class="metrics-grid">
         <div class="metric-card">
             <h3 id="statTotal">0</h3>
             <p>Total Profiles</p>
@@ -716,7 +547,7 @@
     </div>
 
     <!-- Analytics & Chart Summaries Card with Section Selector -->
-    <div class="card tab-section" data-tab="analytics">
+    <div class="card">
         <h2>Visual Readiness & Certification Analytics</h2>
         
         <div class="chart-header-bar non-printable">
@@ -746,7 +577,7 @@
     </div>
 
     <!-- Batch Update Competency Ratings Card -->
-    <div class="card non-printable tab-section" data-tab="register">
+    <div class="card non-printable">
         <h2>Batch Update Section Competency Ratings</h2>
         <div class="grid-4" style="align-items: flex-end;">
             <div class="form-group" style="margin-bottom: 0;">
@@ -779,7 +610,7 @@
     </div>
 
     <!-- Bulk Update Assessment Outcomes Card -->
-    <div class="card non-printable tab-section" data-tab="register">
+    <div class="card non-printable">
         <h2>Bulk Update Section Assessment Outcomes</h2>
         <div class="grid-3" style="align-items: flex-end;">
             <div class="form-group" style="margin-bottom: 0;">
@@ -804,7 +635,7 @@
     </div>
 
     <!-- CSV Batch Import Tool Card -->
-    <div class="card non-printable tab-section" data-tab="register">
+    <div class="card non-printable">
         <h2>Batch Import Student Roster (CSV)</h2>
         <div class="import-box">
             <p style="margin-top: 0;">Upload a CSV spreadsheet containing your class roster to import multiple students at once.</p>
@@ -819,7 +650,7 @@
     </div>
 
     <!-- Registration Form -->
-    <div class="card non-printable tab-section" data-tab="register">
+    <div class="card non-printable">
         <h2>Register New Profile</h2>
         <form id="addProfileForm" onsubmit="addProfile(event)">
             <div class="grid-3">
@@ -874,7 +705,7 @@
     </div>
 
     <!-- Individual Evaluation Section with Search Bar -->
-    <div class="card non-printable tab-section" data-tab="evaluate">
+    <div class="card non-printable">
         <h2>Evaluation Profile Selection</h2>
         <div class="grid-3">
             <div class="form-group">
@@ -920,7 +751,7 @@
     </div>
 
     <!-- Core Competency Checklist Card -->
-    <div class="card non-printable tab-section" data-tab="evaluate">
+    <div class="card non-printable">
         <h2>Comprehensive TESDA Competencies Evaluation Checklist</h2>
         <table>
             <thead>
@@ -952,7 +783,7 @@
     </div>
 
     <!-- Master Directory Summary -->
-    <div class="card tab-section" data-tab="directory">
+    <div class="card">
         <h2>Master Checklist & Directory Summary</h2>
         
         <!-- Filter Control Bar -->
@@ -1017,12 +848,10 @@
 
         <!-- Action Control Buttons -->
         <div class="non-printable" style="margin-top: 20px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
-            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <div style="display: flex; gap: 10px;">
                 <button type="button" class="btn btn-info" onclick="window.print()">Print Directory Report</button>
                 <button type="button" class="btn btn-success" onclick="exportDirectoryCSV()">Export Directory (CSV / Excel)</button>
-                <button type="button" class="btn btn-secondary" onclick="exportData()">Export Backup (JSON)</button>
-                <button type="button" class="btn btn-secondary" onclick="document.getElementById('jsonRestoreInput').click()">Restore Backup (JSON)</button>
-                <input type="file" id="jsonRestoreInput" accept=".json" style="display:none;" onchange="importJSONBackup(event)">
+                <button type="button" class="btn btn-secondary" onclick="exportData()">Export Full Backup (JSON)</button>
             </div>
             <button type="button" class="btn btn-danger" onclick="clearAllData()">Clear All Records</button>
         </div>
@@ -1033,7 +862,7 @@
 <div id="printableCertificateArea">
     <div class="cert-header">
         <h3>Department of Education</h3>
-        <h3>Region III</h3>
+		<h3>Region III</h3>
         <h1>Schools Division Office of City of Meycauayan</h1>
         <p>Technical Professional (TechPro) / TLE Pre-Assessment Readiness Certificate</p>
     </div>
@@ -1082,57 +911,6 @@
         <div class="cert-sig-block">
             <div class="cert-sig-line">School Head / TechPro Coordinator</div>
             <div style="font-size: 11px;">Signature Over Printed Name</div>
-        </div>
-    </div>
-</div>
-
-<!-- Floating Toast Container -->
-<div id="toastContainer"></div>
-
-<!-- Free Cloud Database (Supabase) Configuration Modal -->
-<div id="dbConfigModal" class="modal-overlay">
-    <div class="modal-box">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e9ecef; padding-bottom: 10px; margin-bottom: 15px;">
-            <h2 style="margin: 0; color: var(--primary-color); font-size: 18px;">Free Online Cloud Database Setup (Supabase)</h2>
-            <button type="button" class="btn btn-sm btn-danger" onclick="closeDbModal()">X</button>
-        </div>
-        <p style="font-size: 13px; color: #333; line-height: 1.5;">
-            Para ma-save ang lahat ng records online at ma-access ng iba't ibang teachers/assessors kahit saan (GitHub Pages, Netlify, Vercel, o local browser), ikonekta ito sa isang <strong>100% Free Supabase PostgreSQL Database</strong>:
-        </p>
-        <ol style="font-size: 13px; color: #2d3748; line-height: 1.6; padding-left: 20px;">
-            <li>Gumawa ng libreng account sa <a href="https://supabase.com" target="_blank" style="color: #0d6efd; font-weight: bold;">supabase.com</a> at gumawa ng <strong>New Project</strong>.</li>
-            <li>Pumunta sa <strong>SQL Editor</strong> sa Supabase at i-run ang SQL code na ito para magawa ang table:
-                <div class="code-snippet">CREATE TABLE tvl_profiles (
-  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-  role TEXT NOT NULL,
-  name TEXT NOT NULL,
-  lrn TEXT,
-  qualification TEXT NOT NULL,
-  grade_level TEXT,
-  section TEXT,
-  nc_outcome TEXT DEFAULT 'Pending',
-  competencies JSONB NOT NULL,
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-ALTER TABLE tvl_profiles ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Public Access" ON tvl_profiles FOR ALL USING (true) WITH CHECK (true);</div>
-            </li>
-            <li>Pumunta sa <strong>Project Settings -> API</strong>, at i-copy ang <strong>Project URL</strong> at <strong>anon public API Key</strong> sa ibaba:</li>
-        </ol>
-
-        <div class="form-group">
-            <label for="supabaseUrlInput">Supabase Project URL:</label>
-            <input type="url" id="supabaseUrlInput" placeholder="https://xxxxxxxxxxxx.supabase.co">
-        </div>
-        <div class="form-group">
-            <label for="supabaseKeyInput">Supabase Anon Public Key:</label>
-            <input type="text" id="supabaseKeyInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
-        </div>
-
-        <div style="display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 15px;">
-            <button type="button" class="btn btn-success" onclick="saveCloudConfig()">Save & Connect Cloud DB</button>
-            <button type="button" class="btn btn-info" onclick="pushLocalToCloud()">Upload Local Records to Cloud</button>
-            <button type="button" class="btn btn-secondary" onclick="disconnectCloud()">Use Local Storage Only</button>
         </div>
     </div>
 </div>
@@ -1258,159 +1036,8 @@ CREATE POLICY "Public Access" ON tvl_profiles FOR ALL USING (true) WITH CHECK (t
     let currentProfileId = null;
     let qualPassChartInstance = null;
     let outcomeChartInstance = null;
-    let cachedProfiles = [];
 
-    // Optional: Paste your Supabase Project URL and Anon Key here before hosting online
-    // so every user connects automatically without needing to configure it manually!
-    const DEFAULT_SUPABASE_URL = "https://ggeotovwiunqwiwagijy.supabase.co";
-    const DEFAULT_SUPABASE_KEY = "sb_publishable_2TbyqFSEcT8qf3X2_vqe4Q_3eE0msKh";
-
-    function getCloudConfig() {
-        const url = localStorage.getItem("sdo_supabase_url") || DEFAULT_SUPABASE_URL;
-        const key = localStorage.getItem("sdo_supabase_key") || DEFAULT_SUPABASE_KEY;
-        return { url: url.replace(/\/$/, ""), key };
-    }
-
-    function isCloudEnabled() {
-        const cfg = getCloudConfig();
-        return Boolean(cfg.url && cfg.key);
-    }
-
-    function updateDbStatusUI(state = "ready") {
-        const dot = document.getElementById("dbStatusDot");
-        const text = document.getElementById("dbStatusText");
-        if (!dot || !text) return;
-
-        if (isCloudEnabled()) {
-            if (state === "syncing") {
-                dot.className = "db-status-dot syncing";
-                text.innerText = "Syncing with Cloud Database...";
-            } else if (state === "error") {
-                dot.className = "db-status-dot local";
-                text.innerText = "Cloud Offline - Using Local Cache";
-            } else {
-                dot.className = "db-status-dot";
-                text.innerText = "Online Cloud DB Connected";
-            }
-        } else {
-            dot.className = "db-status-dot local";
-            text.innerText = "Local Browser DB (Click to Connect Cloud)";
-        }
-    }
-
-    function showToast(message, isError = false) {
-        const container = document.getElementById("toastContainer");
-        if (!container) return;
-        const toast = document.createElement("div");
-        toast.className = "toast" + (isError ? " error" : "");
-        toast.innerText = message;
-        container.appendChild(toast);
-        setTimeout(() => toast.classList.add("show"), 20);
-        setTimeout(() => {
-            toast.classList.remove("show");
-            setTimeout(() => toast.remove(), 300);
-        }, 3200);
-    }
-
-    // Interactive Tab Switching
-    function switchTab(tabName, btnElement) {
-        document.querySelectorAll(".nav-tab-btn").forEach(b => b.classList.remove("active"));
-        if (btnElement) btnElement.classList.add("active");
-
-        document.querySelectorAll(".tab-section").forEach(sec => {
-            if (tabName === "all" || sec.getAttribute("data-tab") === tabName) {
-                sec.classList.remove("hidden-tab");
-            } else {
-                sec.classList.add("hidden-tab");
-            }
-        });
-    }
-
-    function openDbModal() {
-        const cfg = getCloudConfig();
-        document.getElementById("supabaseUrlInput").value = cfg.url;
-        document.getElementById("supabaseKeyInput").value = cfg.key;
-        document.getElementById("dbConfigModal").style.display = "flex";
-    }
-
-    function closeDbModal() {
-        document.getElementById("dbConfigModal").style.display = "none";
-    }
-
-    async function saveCloudConfig() {
-        const url = document.getElementById("supabaseUrlInput").value.trim().replace(/\/$/, "");
-        const key = document.getElementById("supabaseKeyInput").value.trim();
-
-        if (!url || !key) {
-            showToast("Please enter both Supabase Project URL and Anon Key.", true);
-            return;
-        }
-
-        localStorage.setItem("sdo_supabase_url", url);
-        localStorage.setItem("sdo_supabase_key", key);
-        closeDbModal();
-        showToast("Connecting to Cloud Database...");
-        await syncFromCloud(true);
-    }
-
-    function disconnectCloud() {
-        localStorage.removeItem("sdo_supabase_url");
-        localStorage.removeItem("sdo_supabase_key");
-        updateDbStatusUI("ready");
-        closeDbModal();
-        showToast("Switched to Local Browser Storage mode.");
-        refreshAllUI();
-    }
-
-    // Supabase REST API Helper
-    async function supabaseFetch(endpoint, options = {}) {
-        const { url, key } = getCloudConfig();
-        const response = await fetch(`${url}/rest/v1/${endpoint}`, {
-            ...options,
-            headers: {
-                "apikey": key,
-                "Authorization": `Bearer ${key}`,
-                "Content-Type": "application/json",
-                "Prefer": "return=representation",
-                ...(options.headers || {})
-            }
-        });
-        if (!response.ok) {
-            const errText = await response.text();
-            throw new Error(errText || `HTTP ${response.status}`);
-        }
-        const text = await response.text();
-        return text ? JSON.parse(text) : [];
-    }
-
-    function mapRowToProfile(row) {
-        return {
-            id: row.id,
-            role: row.role,
-            name: row.name,
-            lrn: row.lrn || "",
-            qualification: row.qualification,
-            gradeLevel: row.grade_level || "",
-            section: row.section || "",
-            ncOutcome: row.nc_outcome || "Pending",
-            competencies: typeof row.competencies === "string" ? JSON.parse(row.competencies) : (row.competencies || [])
-        };
-    }
-
-    function mapProfileToRow(p) {
-        return {
-            role: p.role,
-            name: p.name,
-            lrn: p.lrn || "",
-            qualification: p.qualification,
-            grade_level: p.gradeLevel || "",
-            section: p.section || "",
-            nc_outcome: p.ncOutcome || "Pending",
-            competencies: p.competencies
-        };
-    }
-
-    // Local IndexedDB Initialization (Offline Cache / Standalone DB)
+    // Database Initialization
     const request = indexedDB.open("TLENCMonitorDB_Meycauayan_V14", 1);
 
     request.onupgradeneeded = function (event) {
@@ -1420,177 +1047,16 @@ CREATE POLICY "Public Access" ON tvl_profiles FOR ALL USING (true) WITH CHECK (t
         }
     };
 
-    request.onsuccess = async function (event) {
+    request.onsuccess = function (event) {
         db = event.target.result;
         toggleStudentFields();
-        updateDbStatusUI("ready");
-        if (isCloudEnabled()) {
-            await syncFromCloud(false);
-        } else {
-            await refreshAllUI();
-        }
+        loadProfileList();
+        renderSummaryTable();
     };
 
     request.onerror = function (event) {
         console.error("Database error:", event.target.errorCode);
     };
-
-    async function getAllProfilesData() {
-        if (isCloudEnabled()) {
-            try {
-                updateDbStatusUI("syncing");
-                const rows = await supabaseFetch("tvl_profiles?select=*&order=id.asc");
-                cachedProfiles = rows.map(mapRowToProfile);
-                await replaceLocalProfiles(cachedProfiles);
-                updateDbStatusUI("ready");
-                return cachedProfiles;
-            } catch (err) {
-                console.warn("Cloud fetch failed, falling back to local DB:", err);
-                updateDbStatusUI("error");
-            }
-        }
-        return await getLocalProfiles();
-    }
-
-    function getLocalProfiles() {
-        return new Promise((resolve) => {
-            const tx = db.transaction(["profiles"], "readonly");
-            const req = tx.objectStore("profiles").getAll();
-            req.onsuccess = () => {
-                cachedProfiles = req.result || [];
-                resolve(cachedProfiles);
-            };
-            req.onerror = () => resolve([]);
-        });
-    }
-
-    function replaceLocalProfiles(profiles) {
-        return new Promise((resolve) => {
-            const tx = db.transaction(["profiles"], "readwrite");
-            const store = tx.objectStore("profiles");
-            store.clear();
-            profiles.forEach(p => store.put(p));
-            tx.oncomplete = () => resolve();
-        });
-    }
-
-    async function dbAddProfile(profileObj) {
-        if (isCloudEnabled()) {
-            updateDbStatusUI("syncing");
-            const inserted = await supabaseFetch("tvl_profiles", {
-                method: "POST",
-                body: JSON.stringify(mapProfileToRow(profileObj))
-            });
-            updateDbStatusUI("ready");
-            return inserted[0] ? mapRowToProfile(inserted[0]) : profileObj;
-        } else {
-            return new Promise((resolve) => {
-                const tx = db.transaction(["profiles"], "readwrite");
-                const req = tx.objectStore("profiles").add(profileObj);
-                req.onsuccess = (e) => {
-                    profileObj.id = e.target.result;
-                    resolve(profileObj);
-                };
-            });
-        }
-    }
-
-    async function dbBulkInsertProfiles(profileList) {
-        if (profileList.length === 0) return;
-        if (isCloudEnabled()) {
-            updateDbStatusUI("syncing");
-            await supabaseFetch("tvl_profiles", {
-                method: "POST",
-                body: JSON.stringify(profileList.map(mapProfileToRow))
-            });
-            updateDbStatusUI("ready");
-        } else {
-            return new Promise((resolve) => {
-                const tx = db.transaction(["profiles"], "readwrite");
-                const store = tx.objectStore("profiles");
-                profileList.forEach(p => store.add(p));
-                tx.oncomplete = () => resolve();
-            });
-        }
-    }
-
-    async function dbUpdateProfile(profileObj) {
-        if (isCloudEnabled()) {
-            updateDbStatusUI("syncing");
-            await supabaseFetch(`tvl_profiles?id=eq.${profileObj.id}`, {
-                method: "PATCH",
-                body: JSON.stringify(mapProfileToRow(profileObj))
-            });
-            updateDbStatusUI("ready");
-        } else {
-            return new Promise((resolve) => {
-                const tx = db.transaction(["profiles"], "readwrite");
-                tx.objectStore("profiles").put(profileObj);
-                tx.oncomplete = () => resolve();
-            });
-        }
-    }
-
-    async function dbDeleteProfile(id) {
-        if (isCloudEnabled()) {
-            updateDbStatusUI("syncing");
-            await supabaseFetch(`tvl_profiles?id=eq.${id}`, { method: "DELETE" });
-            updateDbStatusUI("ready");
-        } else {
-            return new Promise((resolve) => {
-                const tx = db.transaction(["profiles"], "readwrite");
-                tx.objectStore("profiles").delete(id);
-                tx.oncomplete = () => resolve();
-            });
-        }
-    }
-
-    async function dbClearAll() {
-        if (isCloudEnabled()) {
-            updateDbStatusUI("syncing");
-            await supabaseFetch("tvl_profiles?id=gt.0", { method: "DELETE" });
-            updateDbStatusUI("ready");
-        }
-        return new Promise((resolve) => {
-            const tx = db.transaction(["profiles"], "readwrite");
-            tx.objectStore("profiles").clear();
-            tx.oncomplete = () => resolve();
-        });
-    }
-
-    async function syncFromCloud(notify = false) {
-        await refreshAllUI();
-        if (notify) {
-            showToast(isCloudEnabled() ? "Cloud Database synced successfully!" : "Local Database refreshed.");
-        }
-    }
-
-    async function pushLocalToCloud() {
-        if (!isCloudEnabled()) {
-            showToast("Please save your Supabase URL and Key first.", true);
-            return;
-        }
-        const localData = await getLocalProfiles();
-        if (localData.length === 0) {
-            showToast("No local records to upload.");
-            return;
-        }
-        if (!confirm(`Upload ${localData.length} local records to the online Cloud Database?`)) return;
-        try {
-            await dbBulkInsertProfiles(localData);
-            closeDbModal();
-            showToast(`Uploaded ${localData.length} records to Cloud DB!`);
-            await refreshAllUI();
-        } catch (err) {
-            showToast("Upload failed: " + err.message, true);
-        }
-    }
-
-    async function refreshAllUI() {
-        const profiles = await getAllProfilesData();
-        renderProfileDropdown(profiles);
-        renderSummaryTableFromData(profiles);
-    }
 
     function toggleStudentFields() {
         const role = document.getElementById("role").value;
@@ -1608,21 +1074,28 @@ CREATE POLICY "Public Access" ON tvl_profiles FOR ALL USING (true) WITH CHECK (t
 
     function generateCompetenciesList(qualification) {
         const units = [];
+
+        // 1. Basic
         basicCompetencies.forEach((title, idx) => {
             units.push({ id: "basic_" + (idx + 1), category: "Basic Competencies", title: title, score: 0 });
         });
+
+        // 2. Common
         const commonUnits = commonCompetenciesMap[qualification] || [];
         commonUnits.forEach((title, idx) => {
             units.push({ id: "common_" + (idx + 1), category: "Common Competencies", title: title, score: 0 });
         });
+
+        // 3. Core
         const coreUnits = coreCompetenciesMap[qualification] || [];
         coreUnits.forEach((title, idx) => {
             units.push({ id: "core_" + (idx + 1), category: "Core Competencies", title: title, score: 0 });
         });
+
         return units;
     }
 
-    async function addProfile(event) {
+    function addProfile(event) {
         event.preventDefault();
 
         const role = document.getElementById("role").value;
@@ -1639,6 +1112,8 @@ CREATE POLICY "Public Access" ON tvl_profiles FOR ALL USING (true) WITH CHECK (t
             section = document.getElementById("section").value.trim();
         }
 
+        const competencies = generateCompetenciesList(qualification);
+
         const newProfile = { 
             role, 
             name, 
@@ -1647,106 +1122,130 @@ CREATE POLICY "Public Access" ON tvl_profiles FOR ALL USING (true) WITH CHECK (t
             gradeLevel, 
             section, 
             ncOutcome: "Pending", 
-            competencies: generateCompetenciesList(qualification) 
+            competencies 
         };
 
-        try {
-            await dbAddProfile(newProfile);
-            showToast(`${role} "${name}" saved successfully!`);
+        const transaction = db.transaction(["profiles"], "readwrite");
+        const store = transaction.objectStore("profiles");
+        store.add(newProfile);
+
+        transaction.oncomplete = function () {
+            alert(`${role} profile created successfully!`);
             document.getElementById("addProfileForm").reset();
             toggleStudentFields();
-            await refreshAllUI();
-        } catch (err) {
-            showToast("Error saving profile: " + err.message, true);
-        }
+            loadProfileList();
+            renderSummaryTable();
+        };
     }
 
-    async function executeBatchRatingUpdate() {
+    // Batch Update Competency Ratings Across Section
+    function executeBatchRatingUpdate() {
         const targetSection = document.getElementById("batchRatingSection").value;
         const targetCategory = document.getElementById("batchRatingCategory").value;
         const targetScore = parseInt(document.getElementById("batchRatingScore").value);
 
         if (!targetSection) {
-            showToast("Please select a target section first.", true);
+            alert("Please select a target section to perform the batch rating update.");
             return;
         }
 
         let ratingLabel = targetScore === 2 ? "Competent (2)" : (targetScore === 1 ? "Developing (1)" : "Not Competent (0)");
 
-        if (!confirm(`Set "${targetCategory}" to "${ratingLabel}" for ALL students in Section "${targetSection}"?`)) {
+        if (!confirm(`Are you sure you want to set "${targetCategory}" to "${ratingLabel}" for ALL students in Section "${targetSection}"?`)) {
             return;
         }
 
-        const profiles = await getAllProfilesData();
-        let updatedStudentsCount = 0;
+        const transaction = db.transaction(["profiles"], "readwrite");
+        const store = transaction.objectStore("profiles");
+        const getRequest = store.getAll();
 
-        for (const p of profiles) {
-            if (p.role === "Student" && p.section === targetSection) {
-                p.competencies.forEach(comp => {
-                    if (targetCategory === "All" || comp.category === targetCategory) {
-                        comp.score = targetScore;
-                    }
-                });
-                await dbUpdateProfile(p);
-                updatedStudentsCount++;
-            }
-        }
+        getRequest.onsuccess = function () {
+            const profiles = getRequest.result;
+            let updatedStudentsCount = 0;
 
-        showToast(`Updated ratings for ${updatedStudentsCount} students in ${targetSection}.`);
-        await refreshAllUI();
-        if (currentProfileId) loadSelectedProfile(currentProfileId);
+            profiles.forEach(p => {
+                if (p.role === "Student" && p.section === targetSection) {
+                    p.competencies.forEach(comp => {
+                        if (targetCategory === "All" || comp.category === targetCategory) {
+                            comp.score = targetScore;
+                        }
+                    });
+                    store.put(p);
+                    updatedStudentsCount++;
+                }
+            });
+
+            transaction.oncomplete = function () {
+                alert(`Successfully updated competency ratings for ${updatedStudentsCount} students in Section "${targetSection}".`);
+                renderSummaryTable();
+                if (currentProfileId) {
+                    loadSelectedProfile(currentProfileId);
+                }
+            };
+        };
     }
 
-    async function executeBulkOutcomeUpdate() {
+    // Bulk Update Section Outcome
+    function executeBulkOutcomeUpdate() {
         const targetSection = document.getElementById("bulkTargetSection").value;
         const newOutcome = document.getElementById("bulkTargetOutcome").value;
 
         if (!targetSection) {
-            showToast("Please select a target section first.", true);
+            alert("Please select a target section to perform the bulk update.");
             return;
         }
 
-        if (!confirm(`Set outcome to "${newOutcome}" for ALL students in Section "${targetSection}"?`)) {
+        if (!confirm(`Are you sure you want to set the outcome to "${newOutcome}" for ALL students in Section "${targetSection}"?`)) {
             return;
         }
 
-        const profiles = await getAllProfilesData();
-        let updatedCount = 0;
+        const transaction = db.transaction(["profiles"], "readwrite");
+        const store = transaction.objectStore("profiles");
+        const getRequest = store.getAll();
 
-        for (const p of profiles) {
-            if (p.role === "Student" && p.section === targetSection) {
-                p.ncOutcome = newOutcome;
-                await dbUpdateProfile(p);
-                updatedCount++;
-            }
-        }
+        getRequest.onsuccess = function () {
+            const profiles = getRequest.result;
+            let updatedCount = 0;
 
-        showToast(`Updated ${updatedCount} records in ${targetSection} to "${newOutcome}".`);
-        await refreshAllUI();
-        if (currentProfileId) loadSelectedProfile(currentProfileId);
+            profiles.forEach(p => {
+                if (p.role === "Student" && p.section === targetSection) {
+                    p.ncOutcome = newOutcome;
+                    store.put(p);
+                    updatedCount++;
+                }
+            });
+
+            transaction.oncomplete = function () {
+                alert(`Successfully updated ${updatedCount} student records in Section "${targetSection}" to "${newOutcome}".`);
+                renderSummaryTable();
+                if (currentProfileId) {
+                    loadSelectedProfile(currentProfileId);
+                }
+            };
+        };
     }
 
+    // CSV Batch Import Functionality
     function processCSVImport() {
         const fileInput = document.getElementById("csvFileInput");
         const file = fileInput.files[0];
 
         if (!file) {
-            showToast("Please select a CSV file first.", true);
+            alert("Please select a CSV file first.");
             return;
         }
 
         const reader = new FileReader();
-        reader.onload = async function (e) {
+        reader.onload = function (e) {
             const text = e.target.result;
-            const lines = text.split(/
-|
-/);
+            const lines = text.split(/\r\n|\n/);
             if (lines.length < 2) {
-                showToast("CSV file appears to be empty.", true);
+                alert("CSV file appears to be empty or missing data rows.");
                 return;
             }
 
             const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
+            
             const lrnIdx = headers.findIndex(h => h.includes('lrn'));
             const nameIdx = headers.findIndex(h => h.includes('name'));
             const gradeIdx = headers.findIndex(h => h.includes('grade'));
@@ -1754,11 +1253,14 @@ CREATE POLICY "Public Access" ON tvl_profiles FOR ALL USING (true) WITH CHECK (t
             const qualIdx = headers.findIndex(h => h.includes('qual') || h.includes('course'));
 
             if (nameIdx === -1) {
-                showToast("CSV header must contain a 'Full Name' column.", true);
+                alert("CSV header must contain a column for Student Full Name (e.g. 'Full Name', 'Name').");
                 return;
             }
 
-            const batchList = [];
+            const transaction = db.transaction(["profiles"], "readwrite");
+            const store = transaction.objectStore("profiles");
+
+            let importCount = 0;
 
             for (let i = 1; i < lines.length; i++) {
                 const line = lines[i].trim();
@@ -1777,10 +1279,13 @@ CREATE POLICY "Public Access" ON tvl_profiles FOR ALL USING (true) WITH CHECK (t
 
                 if (!coreCompetenciesMap[qual]) {
                     const matchedKey = Object.keys(coreCompetenciesMap).find(k => k.toLowerCase().includes(qual.toLowerCase()));
-                    qual = matchedKey || "Cookery NC II";
+                    if (matchedKey) qual = matchedKey;
+                    else qual = "Cookery NC II";
                 }
 
-                batchList.push({
+                const competencies = generateCompetenciesList(qual);
+
+                const studentProfile = {
                     role: "Student",
                     name: name,
                     lrn: lrn,
@@ -1788,18 +1293,19 @@ CREATE POLICY "Public Access" ON tvl_profiles FOR ALL USING (true) WITH CHECK (t
                     gradeLevel: gradeLevel,
                     section: section,
                     ncOutcome: "Pending",
-                    competencies: generateCompetenciesList(qual)
-                });
+                    competencies: competencies
+                };
+
+                store.add(studentProfile);
+                importCount++;
             }
 
-            try {
-                await dbBulkInsertProfiles(batchList);
-                showToast(`Imported ${batchList.length} student records!`);
+            transaction.oncomplete = function () {
+                alert(`Successfully imported ${importCount} student records from CSV!`);
                 fileInput.value = "";
-                await refreshAllUI();
-            } catch (err) {
-                showToast("CSV Import failed: " + err.message, true);
-            }
+                loadProfileList();
+                renderSummaryTable();
+            };
         };
 
         reader.readAsText(file);
@@ -1807,14 +1313,10 @@ CREATE POLICY "Public Access" ON tvl_profiles FOR ALL USING (true) WITH CHECK (t
 
     function downloadSampleCSV() {
         let csvContent = "data:text/csv;charset=utf-8,";
-        csvContent += `LRN,Full Name,Grade Level,Section,Qualification
-`;
-        csvContent += `101234567891,"Juan Dela Cruz","Grade 11","TVL-A","Cookery NC II"
-`;
-        csvContent += `101234567892,"Maria Santos","Grade 12","TVL-B","Technical Drafting NC II"
-`;
-        csvContent += `101234567893,"Pedro Reyes","Grade 11","Diamond","Visual Graphic Design NC II"
-`;
+        csvContent += `LRN,Full Name,Grade Level,Section,Qualification\n`;
+        csvContent += `101234567891,"Juan Dela Cruz","Grade 11","TVL-A","Cookery NC II"\n`;
+        csvContent += `101234567892,"Maria Santos","Grade 12","TVL-B","Technical Drafting NC II"\n`;
+        csvContent += `101234567893,"Pedro Reyes","Grade 11","Diamond","Visual Graphic Design NC II"\n`;
 
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
@@ -1826,97 +1328,97 @@ CREATE POLICY "Public Access" ON tvl_profiles FOR ALL USING (true) WITH CHECK (t
     }
 
     function loadProfileList() {
-        renderProfileDropdown(cachedProfiles);
-    }
-
-    function renderProfileDropdown(profiles) {
         const filterRole = document.getElementById("filterRole").value;
         const evalSearch = document.getElementById("evalSearchInput").value.toLowerCase().trim();
-        const select = document.getElementById("profileSelect");
-        const prevVal = select.value;
-        select.innerHTML = '<option value="">-- Select Profile --</option>';
 
-        profiles.forEach(p => {
-            const matchesRole = (filterRole === "All" || p.role === filterRole);
-            const matchesSearch = evalSearch === "" ||
-                p.name.toLowerCase().includes(evalSearch) ||
-                (p.lrn && p.lrn.toLowerCase().includes(evalSearch)) ||
-                p.qualification.toLowerCase().includes(evalSearch) ||
-                (p.section && p.section.toLowerCase().includes(evalSearch));
+        const transaction = db.transaction(["profiles"], "readonly");
+        const store = transaction.objectStore("profiles");
+        const request = store.getAll();
 
-            if (matchesRole && matchesSearch) {
-                const opt = document.createElement("option");
-                opt.value = p.id;
-                const lrnInfo = (p.role === "Student" && p.lrn) ? ` [LRN: ${p.lrn}]` : '';
-                const classInfo = (p.role === "Student" && p.gradeLevel) ? ` (${p.gradeLevel} - ${p.section})` : '';
-                opt.innerText = `[${p.role}] ${p.name}${lrnInfo}${classInfo} - ${p.qualification}`;
-                select.appendChild(opt);
-            }
-        });
-        if (prevVal) select.value = prevVal;
+        request.onsuccess = function () {
+            const profiles = request.result;
+            const select = document.getElementById("profileSelect");
+            select.innerHTML = '<option value="">-- Select Profile --</option>';
+
+            profiles.forEach(p => {
+                const matchesRole = (filterRole === "All" || p.role === filterRole);
+                
+                const matchesSearch = evalSearch === "" ||
+                    p.name.toLowerCase().includes(evalSearch) ||
+                    (p.lrn && p.lrn.toLowerCase().includes(evalSearch)) ||
+                    p.qualification.toLowerCase().includes(evalSearch) ||
+                    (p.section && p.section.toLowerCase().includes(evalSearch));
+
+                if (matchesRole && matchesSearch) {
+                    const opt = document.createElement("option");
+                    opt.value = p.id;
+                    const lrnInfo = (p.role === "Student" && p.lrn) ? ` [LRN: ${p.lrn}]` : '';
+                    const classInfo = (p.role === "Student" && p.gradeLevel) ? ` (${p.gradeLevel} - ${p.section})` : '';
+                    opt.innerText = `[${p.role}] ${p.name}${lrnInfo}${classInfo} - ${p.qualification}`;
+                    select.appendChild(opt);
+                }
+            });
+        };
     }
 
     function loadSelectedProfile(targetId = null) {
         const id = targetId || parseInt(document.getElementById("profileSelect").value);
         if (!id) return;
 
-        const evalSection = document.querySelector('.tab-section[data-tab="evaluate"]');
-        if (evalSection && evalSection.classList.contains("hidden-tab")) {
-            const evalBtn = document.querySelectorAll(".nav-tab-btn")[3];
-            switchTab("evaluate", evalBtn);
-        }
-
         document.getElementById("profileSelect").value = id;
         currentProfileId = id;
+        const transaction = db.transaction(["profiles"], "readonly");
+        const store = transaction.objectStore("profiles");
+        const request = store.get(id);
 
-        const profile = cachedProfiles.find(p => p.id == id);
-        if (!profile) return;
+        request.onsuccess = function () {
+            const profile = request.result;
+            document.getElementById("displayRole").innerText = profile.role;
+            document.getElementById("displayQual").innerText = profile.qualification;
+            document.getElementById("ncOutcomeSelect").value = profile.ncOutcome || "Pending";
 
-        document.getElementById("displayRole").innerText = profile.role;
-        document.getElementById("displayQual").innerText = profile.qualification;
-        document.getElementById("ncOutcomeSelect").value = profile.ncOutcome || "Pending";
+            const lrnContainer = document.getElementById("lrnDetailsContainer");
+            const classContainer = document.getElementById("classDetailsContainer");
 
-        const lrnContainer = document.getElementById("lrnDetailsContainer");
-        const classContainer = document.getElementById("classDetailsContainer");
+            if (profile.role === "Student") {
+                lrnContainer.style.display = "block";
+                document.getElementById("displayLrn").innerText = profile.lrn || "N/A";
 
-        if (profile.role === "Student") {
-            lrnContainer.style.display = "block";
-            document.getElementById("displayLrn").innerText = profile.lrn || "N/A";
-
-            classContainer.style.display = "block";
-            document.getElementById("displayClassDetails").innerText = `${profile.gradeLevel} - ${profile.section}`;
-        } else {
-            lrnContainer.style.display = "none";
-            classContainer.style.display = "none";
-        }
-
-        const tbody = document.getElementById("competencyList");
-        tbody.innerHTML = "";
-        let currentCategory = "";
-
-        profile.competencies.forEach((comp) => {
-            if (comp.category !== currentCategory) {
-                currentCategory = comp.category;
-                const catTr = document.createElement("tr");
-                catTr.className = "category-header-row";
-                catTr.innerHTML = `<td colspan="2">${currentCategory}</td>`;
-                tbody.appendChild(catTr);
+                classContainer.style.display = "block";
+                document.getElementById("displayClassDetails").innerText = `${profile.gradeLevel} - ${profile.section}`;
+            } else {
+                lrnContainer.style.display = "none";
+                classContainer.style.display = "none";
             }
 
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td>${comp.title}</td>
-                <td class="radio-options">
-                    <label><input type="radio" name="${comp.id}" value="0" ${comp.score === 0 ? 'checked' : ''} onchange="calculateProgress()"> Not Competent (0)</label>
-                    <label><input type="radio" name="${comp.id}" value="1" ${comp.score === 1 ? 'checked' : ''} onchange="calculateProgress()"> Developing (1)</label>
-                    <label><input type="radio" name="${comp.id}" value="2" ${comp.score === 2 ? 'checked' : ''} onchange="calculateProgress()"> Competent (2)</label>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
+            const tbody = document.getElementById("competencyList");
+            tbody.innerHTML = "";
 
-        calculateProgress();
-        evalSection.scrollIntoView({ behavior: "smooth", block: "start" });
+            let currentCategory = "";
+
+            profile.competencies.forEach((comp) => {
+                if (comp.category !== currentCategory) {
+                    currentCategory = comp.category;
+                    const catTr = document.createElement("tr");
+                    catTr.className = "category-header-row";
+                    catTr.innerHTML = `<td colspan="2">${currentCategory}</td>`;
+                    tbody.appendChild(catTr);
+                }
+
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${comp.title}</td>
+                    <td class="radio-options">
+                        <label><input type="radio" name="${comp.id}" value="0" ${comp.score === 0 ? 'checked' : ''} onchange="calculateProgress()"> Not Competent (0)</label>
+                        <label><input type="radio" name="${comp.id}" value="1" ${comp.score === 1 ? 'checked' : ''} onchange="calculateProgress()"> Developing (1)</label>
+                        <label><input type="radio" name="${comp.id}" value="2" ${comp.score === 2 ? 'checked' : ''} onchange="calculateProgress()"> Competent (2)</label>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            calculateProgress();
+        };
     }
 
     function calculateProgress() {
@@ -1955,98 +1457,106 @@ CREATE POLICY "Public Access" ON tvl_profiles FOR ALL USING (true) WITH CHECK (t
         return percentage;
     }
 
-    async function saveRatings() {
+    function saveRatings() {
         if (!currentProfileId) {
-            showToast("Please select a profile first.", true);
+            alert("Please select a profile first.");
             return;
         }
 
-        const profile = cachedProfiles.find(p => p.id == currentProfileId);
-        if (!profile) return;
+        const transaction = db.transaction(["profiles"], "readwrite");
+        const store = transaction.objectStore("profiles");
+        const getRequest = store.get(currentProfileId);
 
-        profile.ncOutcome = document.getElementById("ncOutcomeSelect").value;
-        profile.competencies.forEach(comp => {
-            const selected = document.querySelector(`input[name="${comp.id}"]:checked`);
-            if (selected) {
-                comp.score = parseInt(selected.value);
-            }
-        });
+        getRequest.onsuccess = function () {
+            const profile = getRequest.result;
 
-        try {
-            await dbUpdateProfile(profile);
-            showToast(`Assessment saved for ${profile.name}!`);
-            await refreshAllUI();
-        } catch (err) {
-            showToast("Failed to save assessment: " + err.message, true);
-        }
+            profile.ncOutcome = document.getElementById("ncOutcomeSelect").value;
+
+            profile.competencies.forEach(comp => {
+                const selected = document.querySelector(`input[name="${comp.id}"]:checked`);
+                if (selected) {
+                    comp.score = parseInt(selected.value);
+                }
+            });
+
+            store.put(profile);
+            alert("Assessment records saved successfully!");
+            renderSummaryTable();
+        };
     }
 
     function printIndividualCertificate() {
         if (!currentProfileId) {
-            showToast("Please select a profile first.", true);
+            alert("Please select a profile first to print an individual report.");
             return;
         }
 
-        const profile = cachedProfiles.find(p => p.id == currentProfileId);
-        if (!profile) return;
+        const transaction = db.transaction(["profiles"], "readonly");
+        const store = transaction.objectStore("profiles");
+        const request = store.get(currentProfileId);
 
-        document.getElementById("certName").innerText = profile.name;
-        document.getElementById("certRole").innerText = profile.role;
-        document.getElementById("certQual").innerText = profile.qualification;
-        document.getElementById("certDate").innerText = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        request.onsuccess = function () {
+            const profile = request.result;
 
-        if (profile.role === "Student") {
-            document.getElementById("certLrnRow").style.display = "block";
-            document.getElementById("certLrn").innerText = profile.lrn || "N/A";
-            document.getElementById("certClassRow").style.display = "block";
-            document.getElementById("certClass").innerText = `${profile.gradeLevel} - ${profile.section}`;
-        } else {
-            document.getElementById("certLrnRow").style.display = "none";
-            document.getElementById("certClassRow").style.display = "none";
-        }
+            document.getElementById("certName").innerText = profile.name;
+            document.getElementById("certRole").innerText = profile.role;
+            document.getElementById("certQual").innerText = profile.qualification;
+            document.getElementById("certDate").innerText = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
-        const certBody = document.getElementById("certCompetencyBody");
-        certBody.innerHTML = "";
+            if (profile.role === "Student") {
+                document.getElementById("certLrnRow").style.display = "block";
+                document.getElementById("certLrn").innerText = profile.lrn || "N/A";
 
-        let totalScore = 0;
-        let maxScore = profile.competencies.length * 2;
-        let currentCat = "";
-
-        profile.competencies.forEach(c => {
-            totalScore += (c.score || 0);
-
-            if (c.category !== currentCat) {
-                currentCat = c.category;
-                const catRow = document.createElement("tr");
-                catRow.innerHTML = `<td colspan="2" style="background:#e8f5e9; font-weight:bold;">${currentCat}</td>`;
-                certBody.appendChild(catRow);
+                document.getElementById("certClassRow").style.display = "block";
+                document.getElementById("certClass").innerText = `${profile.gradeLevel} - ${profile.section}`;
+            } else {
+                document.getElementById("certLrnRow").style.display = "none";
+                document.getElementById("certClassRow").style.display = "none";
             }
 
-            let ratingText = "Not Competent (0)";
-            if (c.score === 1) ratingText = "Developing (1)";
-            if (c.score === 2) ratingText = "Competent (2)";
+            const certBody = document.getElementById("certCompetencyBody");
+            certBody.innerHTML = "";
 
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${c.title}</td>
-                <td style="text-align: center;">${ratingText}</td>
-            `;
-            certBody.appendChild(row);
-        });
+            let totalScore = 0;
+            let maxScore = profile.competencies.length * 2;
+            let currentCat = "";
 
-        let pct = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
-        document.getElementById("certScorePct").innerText = pct + "%";
+            profile.competencies.forEach(c => {
+                totalScore += (c.score || 0);
 
-        let readinessLevel = "Requires Intensive Training";
-        if (pct >= 85) readinessLevel = "Ready for TESDA Assessment";
-        else if (pct >= 50) readinessLevel = "Needs Further Refinement";
+                if (c.category !== currentCat) {
+                    currentCat = c.category;
+                    const catRow = document.createElement("tr");
+                    catRow.innerHTML = `<td colspan="2" style="background:#e8f5e9; font-weight:bold;">${currentCat}</td>`;
+                    certBody.appendChild(catRow);
+                }
 
-        document.getElementById("certReadinessLevel").innerText = readinessLevel;
-        document.getElementById("certFinalOutcome").innerText = (profile.ncOutcome || "Pending").toUpperCase();
+                let ratingText = "Not Competent (0)";
+                if (c.score === 1) ratingText = "Developing (1)";
+                if (c.score === 2) ratingText = "Competent (2)";
 
-        document.body.classList.add("print-individual");
-        window.print();
-        document.body.classList.remove("print-individual");
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${c.title}</td>
+                    <td style="text-align: center;">${ratingText}</td>
+                `;
+                certBody.appendChild(row);
+            });
+
+            let pct = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
+            document.getElementById("certScorePct").innerText = pct + "%";
+
+            let readinessLevel = "Requires Intensive Training";
+            if (pct >= 85) readinessLevel = "Ready for TESDA Assessment";
+            else if (pct >= 50) readinessLevel = "Needs Further Refinement";
+
+            document.getElementById("certReadinessLevel").innerText = readinessLevel;
+            document.getElementById("certFinalOutcome").innerText = (profile.ncOutcome || "Pending").toUpperCase();
+
+            document.body.classList.add("print-individual");
+            window.print();
+            document.body.classList.remove("print-individual");
+        };
     }
 
     function updateSectionFilterDropdown(profiles) {
@@ -2070,12 +1580,20 @@ CREATE POLICY "Public Access" ON tvl_profiles FOR ALL USING (true) WITH CHECK (t
         batchRatingSelect.innerHTML = '<option value="">-- Select Section --</option>';
 
         sections.forEach(sec => {
-            [select, bulkSelect, batchRatingSelect].forEach(el => {
-                const opt = document.createElement("option");
-                opt.value = sec;
-                opt.innerText = `Section: ${sec}`;
-                el.appendChild(opt);
-            });
+            const opt = document.createElement("option");
+            opt.value = sec;
+            opt.innerText = `Section: ${sec}`;
+            select.appendChild(opt);
+
+            const optBulk = document.createElement("option");
+            optBulk.value = sec;
+            optBulk.innerText = `Section: ${sec}`;
+            bulkSelect.appendChild(optBulk);
+
+            const optBatchRating = document.createElement("option");
+            optBatchRating.value = sec;
+            optBatchRating.innerText = `Section: ${sec}`;
+            batchRatingSelect.appendChild(optBatchRating);
         });
 
         if (sections.has(currentVal)) select.value = currentVal;
@@ -2083,90 +1601,102 @@ CREATE POLICY "Public Access" ON tvl_profiles FOR ALL USING (true) WITH CHECK (t
         if (sections.has(currentBatchRatingVal)) batchRatingSelect.value = currentBatchRatingVal;
     }
 
+    // Export Section Analytics to CSV
     function exportSectionAnalyticsCSV() {
         const selectedSection = document.getElementById("chartSectionFilter").value;
-        const profiles = cachedProfiles;
 
-        const filteredProfiles = profiles.filter(p => {
-            if (selectedSection === "All") return true;
-            return p.role === "Student" && p.section === selectedSection;
-        });
+        const transaction = db.transaction(["profiles"], "readonly");
+        const store = transaction.objectStore("profiles");
+        const request = store.getAll();
 
-        const qualStats = {};
-        const qualifications = [
-            "Cookery NC II", "Technical Drafting NC II", "Food Processing NC II", 
-            "Visual Graphic Design NC II", "Animation NC II", 
-            "Food & Beverage Services NC II", "Bread & Pastry Production NC II"
-        ];
+        request.onsuccess = function () {
+            const profiles = request.result;
 
-        qualifications.forEach(q => {
-            qualStats[q] = { total: 0, passed: 0, completion: 0, failed: 0, pending: 0 };
-        });
+            const filteredProfiles = profiles.filter(p => {
+                if (selectedSection === "All") return true;
+                return p.role === "Student" && p.section === selectedSection;
+            });
 
-        filteredProfiles.forEach(p => {
-            const q = p.qualification;
-            if (qualStats[q]) {
-                qualStats[q].total++;
-                const outcome = p.ncOutcome || "Pending";
-                if (outcome === "Passed") qualStats[q].passed++;
-                else if (outcome === "For Completion") qualStats[q].completion++;
-                else if (outcome === "Failed") qualStats[q].failed++;
-                else qualStats[q].pending++;
-            }
-        });
+            const qualStats = {};
+            const qualifications = [
+                "Cookery NC II", "Technical Drafting NC II", "Food Processing NC II", 
+                "Visual Graphic Design NC II", "Animation NC II", 
+                "Food & Beverage Services NC II", "Bread & Pastry Production NC II"
+            ];
 
-        let csvContent = "data:text/csv;charset=utf-8,";
-        csvContent += `Section Analytics Report: ${selectedSection}
-`;
-        csvContent += `Qualification,Total Candidates,Passed,For Completion,Failed,Pending,Pass Rate (%)
-`;
+            qualifications.forEach(q => {
+                qualStats[q] = { total: 0, passed: 0, completion: 0, failed: 0, pending: 0 };
+            });
 
-        qualifications.forEach(q => {
-            const s = qualStats[q];
-            const rate = s.total > 0 ? Math.round((s.passed / s.total) * 100) : 0;
-            csvContent += `"${q}",${s.total},${s.passed},${s.completion},${s.failed},${s.pending},${rate}%
-`;
-        });
+            filteredProfiles.forEach(p => {
+                const q = p.qualification;
+                if (qualStats[q]) {
+                    qualStats[q].total++;
+                    const outcome = p.ncOutcome || "Pending";
+                    if (outcome === "Passed") qualStats[q].passed++;
+                    else if (outcome === "For Completion") qualStats[q].completion++;
+                    else if (outcome === "Failed") qualStats[q].failed++;
+                    else qualStats[q].pending++;
+                }
+            });
 
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `Analytics_Summary_${selectedSection.replace(/\s+/g, '_')}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += `Section Analytics Report: ${selectedSection}\n`;
+            csvContent += `Qualification,Total Candidates,Passed,For Completion,Failed,Pending,Pass Rate (%)\n`;
+
+            qualifications.forEach(q => {
+                const s = qualStats[q];
+                const rate = s.total > 0 ? Math.round((s.passed / s.total) * 100) : 0;
+                csvContent += `"${q}",${s.total},${s.passed},${s.completion},${s.failed},${s.pending},${rate}%\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Analytics_Summary_${selectedSection.replace(/\s+/g, '_')}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        };
     }
 
+    // Export Directory Table to CSV / Excel Format
     function exportDirectoryCSV() {
-        const profiles = cachedProfiles;
-        let csvContent = "data:text/csv;charset=utf-8,";
-        csvContent += `Role,LRN,Full Name,Grade Level,Section,Qualification,Readiness %,TESDA Assessment Outcome
-`;
+        const transaction = db.transaction(["profiles"], "readonly");
+        const store = transaction.objectStore("profiles");
+        const request = store.getAll();
 
-        profiles.forEach(p => {
-            let scoreSum = 0;
-            let max = p.competencies.length * 2;
-            p.competencies.forEach(c => scoreSum += (c.score || 0));
-            let pct = max > 0 ? Math.round((scoreSum / max) * 100) : 0;
+        request.onsuccess = function () {
+            const profiles = request.result;
 
-            const lrn = p.role === "Student" ? (p.lrn || "N/A") : "N/A";
-            const grade = p.role === "Student" ? (p.gradeLevel || "N/A") : "N/A";
-            const section = p.role === "Student" ? (p.section || "N/A") : "N/A";
-            const outcome = p.ncOutcome || "Pending";
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += `Role,LRN,Full Name,Grade Level,Section,Qualification,Readiness %,TESDA Assessment Outcome\n`;
 
-            csvContent += `"${p.role}","${lrn}","${p.name}","${grade}","${section}","${p.qualification}",${pct}%,"${outcome}"
-`;
-        });
+            profiles.forEach(p => {
+                let scoreSum = 0;
+                let max = p.competencies.length * 2;
+                p.competencies.forEach(c => scoreSum += (c.score || 0));
+                let pct = max > 0 ? Math.round((scoreSum / max) * 100) : 0;
 
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `SDO_Meycauayan_TVL_Master_Directory_${new Date().toISOString().slice(0,10)}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
+                const lrn = p.role === "Student" ? (p.lrn || "N/A") : "N/A";
+                const grade = p.role === "Student" ? (p.gradeLevel || "N/A") : "N/A";
+                const section = p.role === "Student" ? (p.section || "N/A") : "N/A";
+                const outcome = p.ncOutcome || "Pending";
+
+                csvContent += `"${p.role}","${lrn}","${p.name}","${grade}","${section}","${p.qualification}",${pct}%,"${outcome}"\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `SDO_Meycauayan_TVL_Master_Directory_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        };
     }
 
+    // Render Charts filtered by Section
     function updateCharts(profiles) {
         const selectedSection = document.getElementById("chartSectionFilter").value;
 
@@ -2215,6 +1745,7 @@ CREATE POLICY "Public Access" ON tvl_profiles FOR ALL USING (true) WITH CHECK (t
             return item.total > 0 ? Math.round((item.passed / item.total) * 100) : 0;
         });
 
+        // 1. Bar Chart: Pass Rates by Qualification
         const ctxQual = document.getElementById("qualPassChart").getContext("2d");
         if (qualPassChartInstance) qualPassChartInstance.destroy();
 
@@ -2246,6 +1777,7 @@ CREATE POLICY "Public Access" ON tvl_profiles FOR ALL USING (true) WITH CHECK (t
             }
         });
 
+        // 2. Doughnut Chart: Outcome Distribution
         const ctxOutcome = document.getElementById("outcomeChart").getContext("2d");
         if (outcomeChartInstance) outcomeChartInstance.destroy();
 
@@ -2274,100 +1806,107 @@ CREATE POLICY "Public Access" ON tvl_profiles FOR ALL USING (true) WITH CHECK (t
     }
 
     function renderSummaryTable() {
-        renderSummaryTableFromData(cachedProfiles);
-    }
+        const transaction = db.transaction(["profiles"], "readonly");
+        const store = transaction.objectStore("profiles");
+        const request = store.getAll();
 
-    function renderSummaryTableFromData(profiles) {
-        updateSectionFilterDropdown(profiles);
-        updateCharts(profiles);
+        request.onsuccess = function () {
+            const profiles = request.result;
 
-        const searchQuery = document.getElementById("summarySearchInput").value.toLowerCase().trim();
-        const filterRole = document.getElementById("summaryFilterRole").value;
-        const filterQual = document.getElementById("summaryFilterQual").value;
-        const filterOutcome = document.getElementById("summaryFilterOutcome").value;
+            updateSectionFilterDropdown(profiles);
+            updateCharts(profiles);
 
-        const tbody = document.getElementById("summaryTableBody");
-        tbody.innerHTML = "";
+            const searchQuery = document.getElementById("summarySearchInput").value.toLowerCase().trim();
+            const filterRole = document.getElementById("summaryFilterRole").value;
+            const filterQual = document.getElementById("summaryFilterQual").value;
+            const filterOutcome = document.getElementById("summaryFilterOutcome").value;
 
-        let countTeachers = 0;
-        let countStudents = 0;
-        let countPassed = 0;
+            const tbody = document.getElementById("summaryTableBody");
+            tbody.innerHTML = "";
 
-        profiles.forEach(p => {
-            if (p.role === "Teacher") countTeachers++;
-            if (p.role === "Student") countStudents++;
-            if (p.ncOutcome === "Passed") countPassed++;
+            let countTeachers = 0;
+            let countStudents = 0;
+            let countPassed = 0;
 
-            let scoreSum = 0;
-            let max = p.competencies.length * 2;
-            p.competencies.forEach(c => scoreSum += (c.score || 0));
-            let pct = max > 0 ? Math.round((scoreSum / max) * 100) : 0;
+            profiles.forEach(p => {
+                if (p.role === "Teacher") countTeachers++;
+                if (p.role === "Student") countStudents++;
+                if (p.ncOutcome === "Passed") countPassed++;
 
-            const matchesRole = (filterRole === "All" || p.role === filterRole);
-            const matchesQual = (filterQual === "All" || p.qualification === filterQual);
-            const matchesOutcome = (filterOutcome === "All" || (p.ncOutcome || "Pending") === filterOutcome);
-            
-            const matchesSearch = searchQuery === "" || 
-                p.name.toLowerCase().includes(searchQuery) ||
-                (p.lrn && p.lrn.toLowerCase().includes(searchQuery)) ||
-                p.role.toLowerCase().includes(searchQuery) ||
-                p.qualification.toLowerCase().includes(searchQuery) ||
-                (p.section && p.section.toLowerCase().includes(searchQuery)) ||
-                (p.gradeLevel && p.gradeLevel.toLowerCase().includes(searchQuery));
+                let scoreSum = 0;
+                let max = p.competencies.length * 2;
+                p.competencies.forEach(c => scoreSum += (c.score || 0));
+                let pct = max > 0 ? Math.round((scoreSum / max) * 100) : 0;
 
-            if (matchesRole && matchesQual && matchesOutcome && matchesSearch) {
-                let outcomeClass = "outcome-pending";
-                let outcomeText = p.ncOutcome || "Pending";
+                const matchesRole = (filterRole === "All" || p.role === filterRole);
+                const matchesQual = (filterQual === "All" || p.qualification === filterQual);
+                const matchesOutcome = (filterOutcome === "All" || (p.ncOutcome || "Pending") === filterOutcome);
+                
+                const matchesSearch = searchQuery === "" || 
+                    p.name.toLowerCase().includes(searchQuery) ||
+                    (p.lrn && p.lrn.toLowerCase().includes(searchQuery)) ||
+                    p.role.toLowerCase().includes(searchQuery) ||
+                    p.qualification.toLowerCase().includes(searchQuery) ||
+                    (p.section && p.section.toLowerCase().includes(searchQuery)) ||
+                    (p.gradeLevel && p.gradeLevel.toLowerCase().includes(searchQuery));
 
-                if (p.ncOutcome === "Passed") {
-                    outcomeClass = "outcome-passed";
-                    outcomeText = "Passed";
-                } else if (p.ncOutcome === "For Completion") {
-                    outcomeClass = "outcome-completion";
-                    outcomeText = "For Completion";
-                } else if (p.ncOutcome === "Failed") {
-                    outcomeClass = "outcome-failed";
-                    outcomeText = "Failed";
+                if (matchesRole && matchesQual && matchesOutcome && matchesSearch) {
+                    let outcomeClass = "outcome-pending";
+                    let outcomeText = p.ncOutcome || "Pending";
+
+                    if (p.ncOutcome === "Passed") {
+                        outcomeClass = "outcome-passed";
+                        outcomeText = "Passed";
+                    } else if (p.ncOutcome === "For Completion") {
+                        outcomeClass = "outcome-completion";
+                        outcomeText = "For Completion";
+                    } else if (p.ncOutcome === "Failed") {
+                        outcomeClass = "outcome-failed";
+                        outcomeText = "Failed";
+                    }
+
+                    const lrnDisplay = (p.role === "Student" && p.lrn) ? p.lrn : "N/A";
+                    const gradeDisplay = (p.role === "Student" && p.gradeLevel) ? p.gradeLevel : "N/A";
+                    const sectionDisplay = (p.role === "Student" && p.section) ? p.section : "N/A";
+
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td><strong>${p.role}</strong></td>
+                        <td>${lrnDisplay}</td>
+                        <td>${p.name}</td>
+                        <td>${gradeDisplay}</td>
+                        <td>${sectionDisplay}</td>
+                        <td>${p.qualification}</td>
+                        <td><strong>${pct}%</strong></td>
+                        <td><span class="outcome-badge ${outcomeClass}">${outcomeText}</span></td>
+                        <td class="action-col" style="text-align: center;">
+                            <button class="btn btn-sm" onclick="loadSelectedProfile(${p.id})">Evaluate</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteProfile(${p.id}, '${p.name.replace(/'/g, "\\'")}')">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
                 }
+            });
 
-                const lrnDisplay = (p.role === "Student" && p.lrn) ? p.lrn : "N/A";
-                const gradeDisplay = (p.role === "Student" && p.gradeLevel) ? p.gradeLevel : "N/A";
-                const sectionDisplay = (p.role === "Student" && p.section) ? p.section : "N/A";
-
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td><strong>${p.role}</strong></td>
-                    <td>${lrnDisplay}</td>
-                    <td>${p.name}</td>
-                    <td>${gradeDisplay}</td>
-                    <td>${sectionDisplay}</td>
-                    <td>${p.qualification}</td>
-                    <td><strong>${pct}%</strong></td>
-                    <td><span class="outcome-badge ${outcomeClass}">${outcomeText}</span></td>
-                    <td class="action-col" style="text-align: center;">
-                        <button class="btn btn-sm" onclick="loadSelectedProfile(${p.id})">Evaluate</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteProfile(${p.id}, '${p.name.replace(/'/g, "\'")}')">Delete</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
+            if (tbody.children.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;">No matching profiles found in database.</td></tr>`;
             }
-        });
 
-        if (tbody.children.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;">No matching profiles found in database.</td></tr>`;
-        }
-
-        document.getElementById("statTotal").innerText = profiles.length;
-        document.getElementById("statTeachers").innerText = countTeachers;
-        document.getElementById("statStudents").innerText = countStudents;
-        document.getElementById("statReady").innerText = countPassed;
+            document.getElementById("statTotal").innerText = profiles.length;
+            document.getElementById("statTeachers").innerText = countTeachers;
+            document.getElementById("statStudents").innerText = countStudents;
+            document.getElementById("statReady").innerText = countPassed;
+        };
     }
 
-    async function deleteProfile(id, name) {
+    function deleteProfile(id, name) {
         if (confirm(`Are you sure you want to delete the record for "${name}"? This action cannot be undone.`)) {
-            try {
-                await dbDeleteProfile(id);
-                showToast(`Profile for "${name}" deleted.`);
+            const transaction = db.transaction(["profiles"], "readwrite");
+            const store = transaction.objectStore("profiles");
+            store.delete(id);
+
+            transaction.oncomplete = function () {
+                alert(`Profile for "${name}" has been deleted.`);
                 
                 if (currentProfileId === id) {
                     currentProfileId = null;
@@ -2380,62 +1919,39 @@ CREATE POLICY "Public Access" ON tvl_profiles FOR ALL USING (true) WITH CHECK (t
                     document.getElementById("competencyList").innerHTML = '<tr><td colspan="2">Please select a profile above to evaluate basic, common, and core competencies.</td></tr>';
                 }
 
-                await refreshAllUI();
-            } catch (err) {
-                showToast("Delete failed: " + err.message, true);
-            }
+                loadProfileList();
+                renderSummaryTable();
+            };
         }
     }
 
-    async function clearAllData() {
+    function clearAllData() {
         if (confirm("WARNING: Are you sure you want to delete ALL teacher and student records? This process cannot be undone.")) {
-            try {
-                await dbClearAll();
-                showToast("All records cleared.");
-                await refreshAllUI();
-            } catch (err) {
-                showToast("Clear failed: " + err.message, true);
-            }
+            const transaction = db.transaction(["profiles"], "readwrite");
+            const store = transaction.objectStore("profiles");
+            store.clear();
+
+            transaction.oncomplete = function () {
+                alert("All records have been cleared.");
+                location.reload();
+            };
         }
     }
 
     function exportData() {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(cachedProfiles, null, 2));
-        const downloadAnchor = document.createElement('a');
-        downloadAnchor.setAttribute("href", dataStr);
-        downloadAnchor.setAttribute("download", "sdo_meycauayan_nc2_monitoring_backup.json");
-        document.body.appendChild(downloadAnchor);
-        downloadAnchor.click();
-        downloadAnchor.remove();
-    }
+        const transaction = db.transaction(["profiles"], "readonly");
+        const store = transaction.objectStore("profiles");
+        const request = store.getAll();
 
-    function importJSONBackup(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = async function (e) {
-            try {
-                const parsed = JSON.parse(e.target.result);
-                if (!Array.isArray(parsed)) throw new Error("Invalid backup format.");
-                const cleaned = parsed.map(p => ({
-                    role: p.role || "Student",
-                    name: p.name,
-                    lrn: p.lrn || "",
-                    qualification: p.qualification || "Cookery NC II",
-                    gradeLevel: p.gradeLevel || "",
-                    section: p.section || "",
-                    ncOutcome: p.ncOutcome || "Pending",
-                    competencies: p.competencies || generateCompetenciesList(p.qualification || "Cookery NC II")
-                }));
-                await dbBulkInsertProfiles(cleaned);
-                showToast(`Restored ${cleaned.length} records from JSON backup!`);
-                await refreshAllUI();
-            } catch (err) {
-                showToast("JSON Restore failed: " + err.message, true);
-            }
-            event.target.value = "";
+        request.onsuccess = function () {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(request.result, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "sdo_meycauayan_nc2_monitoring_backup.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
         };
-        reader.readAsText(file);
     }
 </script>
 
